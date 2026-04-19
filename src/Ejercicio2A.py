@@ -36,5 +36,30 @@ def mostrar_primeras_filas_XenoCanto ():
 			print (row)
 			if i >= 9:
 				break
-			
 
+# INICIO DEL INCISO 2b 
+#Hacer una funcion con las columnas de los datasets
+
+def columnas_dataset(dataset): 
+    base = Path(__file__).parent 
+    
+    if dataset == "IADIZA":
+        ruta = base.parent / 'raw_datasets' / 'IADIZA-CONICET' / 'occurrence.txt'
+        sep = '\t'
+    elif dataset == "Inaturalist":
+        ruta = base.parent / 'raw_datasets' / 'Inaturalist' / 'observations.csv'
+        sep = ','
+    elif dataset == "XenoCanto":
+        ruta = base.parent / 'raw_datasets' / 'XenoCanto' / 'Occurrence.txt'
+        sep = ','
+    else:
+        return "Dataset no reconocido"
+    #EL encoding utf-8 es para que se lean los caracteres especiales 
+    with open(ruta, 'r', encoding='utf-8') as archivo_abierto:
+        lector_csv = csv.reader(archivo_abierto, delimiter=sep)
+		#El lector agarra el archivo para que python lo entienda y lo separe con el separador
+        columnas = next(lector_csv) 
+		#El next devuelve la primera fila del dataset que mandamos para tener los nombres de las columnas
+    return columnas
+
+#print(columnas_dataset("IADIZA"))
