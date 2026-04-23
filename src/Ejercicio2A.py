@@ -44,13 +44,13 @@ def columnas_dataset(dataset):
     base = Path(__file__).parent 
     
     if dataset == "IADIZA":
-        ruta = base.parent / 'raw_datasets' / 'IADIZA-CONICET' / 'occurrence.txt'
+        ruta = base.parent / 'raw_datasets' / 'IADIZA-CONICET'/ 'IADIZA-CONICET' / 'occurrence.txt'
         sep = '\t'
     elif dataset == "Inaturalist":
-        ruta = base.parent / 'raw_datasets' / 'Inaturalist' / 'observations.csv'
+        ruta = base.parent / 'raw_datasets' / 'Inaturalist' / 'Inaturalist' / 'observations.csv'
         sep = ','
     elif dataset == "XenoCanto":
-        ruta = base.parent / 'raw_datasets' / 'XenoCanto' / 'Occurrence.txt'
+        ruta = base.parent / 'raw_datasets' / 'XenoCanto' / 'XenoCanto' / 'Occurrence.txt'
         sep = ','
     else:
         return "Dataset no reconocido"
@@ -61,5 +61,16 @@ def columnas_dataset(dataset):
         columnas = next(lector_csv) 
 		#El next devuelve la primera fila del dataset que mandamos para tener los nombres de las columnas
     return columnas
+	#print(columnas_dataset("IADIZA"))
 
-#print(columnas_dataset("IADIZA"))
+#INCISO 2c
+def obtener_indices_columnas(dataset):
+    """Retorna un diccionario con {nombre_columna: indice}"""
+    nombres = columnas_dataset(dataset)
+    
+    if isinstance(nombres, str): # Por si devuelve el error "Dataset no reconocido" (isinstance verifica que nombres sea string)
+        return nombres
+        
+    #Uso una comprensión de diccionario para mapear nombre -> posición
+    indices = {nombre: i for i, nombre in enumerate(nombres)}
+    return indices
