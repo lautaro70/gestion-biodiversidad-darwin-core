@@ -73,4 +73,29 @@ def obtener_indices_columnas(dataset):
         
     #Uso una comprensión de diccionario para mapear nombre -> posición
     indices = {nombre: i for i, nombre in enumerate(nombres)}
-    return indices
+    return indices	
+
+#INCISO 2d
+def contar_registros(dataset):
+	"""Retorna la cantidad total de registros (filas de datos) del dataset,
+    sin contar el encabezado."""
+	base = Path(__file__).parent 
+	if dataset == "IADIZA":
+		ruta = base.parent / 'raw_datasets' / 'IADIZA-CONICET'/ 'IADIZA-CONICET' / 'occurrence.txt'
+		sep = '\t' 
+	elif dataset == "Inaturalist":
+		ruta = base.parent / 'raw_datasets' / 'Inaturalist' / 'Inaturalist' / 'observations.csv'
+		sep = ','
+	elif dataset == "XenoCanto": 
+		ruta = base.parent / 'raw_datasets' / 'XenoCanto' / 'XenoCanto' / 'Occurrence.txt'
+		sep = ','
+	else:
+		return "Dataset no reconocido"
+    #EL encoding utf-8 es para que se lean los caracteres especiales
+	with open(ruta, 'r', encoding='utf-8') as archivo:
+		lector_csv = csv.reader(archivo, delimiter=sep) #"hasta aca podemos hacer una nueva funcion para que haga esto las veces necesarias"
+		next(lector_csv)
+		cantidad = 0
+		for fila in lector_csv:
+			cantidad += 1
+	return cantidad
