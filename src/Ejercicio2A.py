@@ -220,3 +220,73 @@ def frecuencia_valores(dataset, columna):
                     frecuencia[valor] = frecuencia.get(valor, 0) + 1
 
     return frecuencia
+
+#Inciso 2i
+def analisis_columna(dataset, columna, tipo):
+    """numeric: min, max, promedio
+       coordinate: min, max
+       text: longitud mínima y máxima"""
+
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    if ruta is None:
+        return f"Dataset '{dataset}' no reconocido."
+
+    indices = obtener_indices_columnas(dataset)
+    if isinstance(indices, str):
+        return indices
+
+    if columna not in indices:
+        return f"La columna '{columna}' no existe."
+
+    idx = indices[columna]
+    valores = []
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        # Recorro el dataset sin cargarlo completo en memoria
+        for fila in lector:
+            # Filtro valores válidos (no vacíos)
+            if idx < len(fila) and fila[idx].strip() != "":
+                valores.append(fila[idx])
+
+    if not valores:
+        return "No hay datos válidos"
+
+    #CASOS SEGÚN TIPO
+
+    if tipo == "numeric" or tipo == "coordinate":
+        numeros = []
+
+        # Intento convertir a float (evita que falle si hay datos sucios)
+        for v in valores:
+            try:
+                numeros.append(float(v))
+            except ValueError:
+                continue  # ignoro valores no numéricos
+
+        if not numeros:
+            return "No hay datos numéricos válidos"
+
+        resultado = {
+            "min": min(numeros),
+            "max": max(numeros)
+        }
+
+        if tipo == "numeric":
+            resultado["promedio"] = sum(numeros) / len(numeros)
+
+        return resultado
+
+    elif tipo == "text":
+        # Mido la longitud de cada string
+        longitudes = [len(v) for v in valores]
+
+        return {
+            "min_len": min(longitudes),
+            "max_len": max(longitudes)
+        }
+
+    else:
+        return "Tipo no válido"
