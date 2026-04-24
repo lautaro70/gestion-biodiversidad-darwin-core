@@ -1,7 +1,7 @@
 from pathlib import Path
 import csv
 
-def mostrar_primeras_filas_Conicet ():
+def mostrar_primeras_filas_Conicet():
 	base = Path(__file__).parent 
 	ruta = base.parent / 'raw_datasets' / 'IADIZA-CONICET' / 'IADIZA-CONICET' / 'occurrence.txt'
 	with open(ruta, 'r') as Conicet_dataset:
@@ -95,6 +95,7 @@ def contar_registros(dataset):
 			cantidad += 1
 	return cantidad 
 
+#INCISO 2e
 def columnas_con_nulos(dataset):
 	"""Retorna una lista con los nombres de las columnas que tienen 
     al menos un registro nulo, reutilizando la función del Punto 2.C."""
@@ -116,3 +117,40 @@ def columnas_con_nulos(dataset):
 				if indice < len(fila) and fila[indice].strip() == "":
 					columnas_vacias.add(nombre_columna) 
 		return list(columnas_vacias)
+
+#INCISO 2f
+def porcentaje_nulos(dataset):
+	"""Retorna el porcentaje de valores nulos por columna"""
+
+	ruta, sep = obtener_ruta_y_separador(dataset)
+	if ruta is None:
+		return f"Dataset '{dataset}' no reconocido."
+
+	indices = obtener_indices_columnas(dataset)
+	if isinstance(indices, str):
+		return indices
+
+	total_filas = contar_registros(dataset)  # Reutilizo función ya hecha
+	
+	# Evito división por 0 en caso de dataset vacío
+	if total_filas == 0:
+		return {}
+
+	conteo_nulos = {col: 0 for col in indices}
+
+	with open(ruta, 'r', encoding='utf-8') as archivo:
+		lector = csv.reader(archivo, delimiter=sep)
+		next(lector)
+
+		for fila in lector:
+			for col, idx in indices.items():
+				# idx < len evita errores si la fila está incompleta
+				if idx < len(fila) and fila[idx].strip() == "":
+					conteo_nulos[col] += 1
+     
+	# Convierto el conteo de nulos a porcentaje por columna
+	return {
+		col: (conteo_nulos[col] / total_filas) * 100
+		for col in conteo_nulos
+	}
+ 
