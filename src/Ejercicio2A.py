@@ -154,8 +154,7 @@ def porcentaje_nulos(dataset):
         for col in conteo_nulos
     }
  
- #Inciso 2g
- 
+#Inciso 2g 
 def valores_distintos(dataset, columna):
     """Retorna la cantidad de valores distintos de una columna"""
 
@@ -187,3 +186,37 @@ def valores_distintos(dataset, columna):
                     valores.add(valor)
     return len(valores)
  
+#Inciso 2h
+def frecuencia_valores(dataset, columna):
+    """Retorna la frecuencia de aparición de cada valor en una columna"""
+
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    if ruta is None:
+        return f"Dataset '{dataset}' no reconocido."
+
+    indices = obtener_indices_columnas(dataset)
+    if isinstance(indices, str):
+        return indices
+
+    # Verifico que la columna exista
+    if columna not in indices:
+        return f"La columna '{columna}' no existe."
+
+    idx = indices[columna]
+    frecuencia = {}
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        # Recorro el dataset fila por fila sin cargarlo completo en memoria
+        for fila in lector:
+            if idx < len(fila):
+                valor = fila[idx].strip()
+
+                # Ignoro valores vacíos para no ensuciar el conteo
+                if valor != "":
+                    # get(valor, 0) evita hacer if valor in diccionario
+                    frecuencia[valor] = frecuencia.get(valor, 0) + 1
+
+    return frecuencia
