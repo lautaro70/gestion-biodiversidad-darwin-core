@@ -1,5 +1,6 @@
 from pathlib import Path
 import csv
+from datetime import datetime
 from Ejercicio2A import obtener_ruta_y_separador, obtener_indices_columnas, contar_registros
 
 
@@ -81,6 +82,72 @@ def validar_coordenadas_incompletas(dataset):
     return incompletos
 
 
+#------ 3c ------
+def verificar_fechas(dataset):
+    """
+    Revisa que las fechas de los datasets sean válidas. 
+    Se consideran válidas a las fechas que tengan el formato adecuado y no sean mayores al año actual
+    """
+   
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+
+    #creo un diccionario para saber que columnas revisar en cada dataset
+    columnas_por_dataset = {
+        "IADIZA": ['modified', 'eventDate', 'verbatimEventDate', 'dateIdentified', 'georeferencedDate', 'lastInterpreted', 'lastParsed', 'lastCrawled'],
+        "Inaturalist": ['eventDate', 'modified','verbatimEventDate', 'dateIdentified'],
+        "XenoCanto": ['eventDate', 'verbatimEventDate']
+    }
+
+    #revisa si el nombre del dataset está en el diccionario, sino devuelve una lista vacia (false)
+    columnas_fecha = columnas_por_dataset.get(dataset, [])
+    if not columnas_fecha:
+        return f"No se reconoce el dataset '{dataset}'"
+
+    # escribimos los formatos de fechas válidos (formatos que define el estándar Darwin Core y GBIF)
+    formatos = [
+    "%Y-%m-%d",             
+    "%Y-%m-%dT%H:%M:%SZ",
+    "%Y-%m-%dT%H:%M:%S.%fZ",   
+    "%Y-%m-%dT%H:%M:%S%z",  
+    "%Y-%m",                 
+    "%Y",                    
+    ]
+
+    anio_actual = datetime.now().year
+    errores = []
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        for nro_fila, fila in enumerate(lector, start=2):
+            for columna in columnas_fecha:  #para cada fila revisamos cada columna de fecha
+                idx = indices.get(columna)  #obtenemos el indice de la columna
+                if idx is None:
+                    continue    #si la columna no existe en el dataset la saltea
+
+                fecha_txt = fila[idx].strip()  #nos quedamos con la fecha
+
+                if fecha_txt == "":  #si está vacio lo saltea
+                    continue
+
+                fecha_valida = False
+                for formato in formatos:  #prueba los formatos para ver cual es el válido
+                    try:
+                        #strptime convierte un texto a fecha usando el formato que le digamos
+                        fecha = datetime.strptime(fecha_txt, formato)
+                        fecha_valida = True
+                        if fecha.year > anio_actual:
+                            errores.append(f"Fila {nro_fila} columna '{columna}': Fecha posterior al año actual: {fecha_txt}")
+                        break  #si es el formato correcto frenamos
+                    except ValueError:
+                        continue 
+
+                if not fecha_valida:
+                    errores.append(f"Fila {nro_fila} columna '{columna}': Formato inválido: {fecha_txt}")
+
+    return len(errores), errores  
 
 #-------3d ------
 
