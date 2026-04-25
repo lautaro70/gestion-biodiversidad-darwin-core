@@ -290,3 +290,32 @@ def analisis_columna(dataset, columna, tipo):
 
     else:
         return "Tipo no válido"
+
+#Inciso 2j
+def columnas_totalmente_nulas(dataset):
+    """Retorna las columnas cuyos valores son nulos en todos los registros"""
+
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    if ruta is None:
+        return f"Dataset '{dataset}' no reconocido."
+
+    indices = obtener_indices_columnas(dataset)
+    if isinstance(indices, str):
+        return indices
+
+    # Supongo inicialmente que todas las columnas son completamente nulas
+    columnas_nulas = {col: True for col in indices}
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        # Recorro el dataset fila por fila (sin cargar todo en memoria)
+        for fila in lector:
+            for col, idx in indices.items():
+                # Si encuentro un valor no vacío, la columna deja de ser completamente nula
+                if idx < len(fila) and fila[idx].strip() != "":
+                    columnas_nulas[col] = False
+
+    # Devuelvo solo las columnas que quedaron siempre vacías
+    return [col for col, es_nula in columnas_nulas.items() if es_nula]
