@@ -6,7 +6,7 @@ from Ejercicio2A import obtener_ruta_y_separador, obtener_indices_columnas, cont
 
 #Arranco con el 3a
 
-print ('holaaaaaa')
+
 
 def validar_coordenadas_rango(dataset):
 
@@ -40,7 +40,7 @@ def validar_coordenadas_rango(dataset):
                 if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
                     errores.append(f"Fila {nro_fila}: Número fuera de rango.")
 
-    return errores #Aca devuelve la lista con los errores
+    return len(errores),errores #Aca devuelve la lista con los errores
 
 #Para tener la cantidad de errores hacemos un len y la tenemos
 
@@ -79,3 +79,37 @@ def validar_coordenadas_incompletas(dataset):
             #No tuvimos en cuenta los casos donde no tiene ninguno de los 2 campos.Deberiamos agregarlo ?
 
     return incompletos
+
+
+
+#-------3d ------
+
+def detectar_duplicados(dataset):
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+#Agarramos la columna id
+    idx_id = indices.get('occurrenceID')
+    if idx_id is None:
+        idx_id = indices.get('id')
+
+# 2 listas. Una con todos los id y otra con los que se repiten
+    todos_los_ids = []
+    duplicados = []
+
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        for fila in lector:
+            id_actual = fila[idx_id].strip()
+            
+            if id_actual != "": #Primero revisamos que el id no este vacio
+                if id_actual in todos_los_ids: #Si esta en todos los ids y no en duplicados, lo agregamos a duplicados porque se estaria repitiendo
+                    if id_actual not in duplicados:
+                        duplicados.append(id_actual)
+                
+                else: 
+                    todos_los_ids.append(id_actual) #Pero si no esta en todos los ids, lo agregamos a todos porque es la pirmera vez que aparece
+
+    return len(duplicados), duplicados #devolvemos la lista con la cantidad de duplicados
