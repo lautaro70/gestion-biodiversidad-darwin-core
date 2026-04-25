@@ -6,7 +6,10 @@ from Ejercicio2A import obtener_ruta_y_separador, obtener_indices_columnas, cont
 
 #Arranco con el 3a
 
+print ('holaaaaaa')
+
 def validar_coordenadas_rango(dataset):
+
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
 #Agarro los indices de las latitudes y longitudes gracias a las funciones del punto 2
@@ -44,3 +47,35 @@ def validar_coordenadas_rango(dataset):
 
 #----3b----
 
+def validar_coordenadas_incompletas(dataset):
+
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+    
+    idx_lat = indices.get('decimalLatitude')
+    idx_lon = indices.get('decimalLongitude')
+    
+    incompletos = []
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        #Hasta aca es lo mismo que el 3a, misma metodología
+
+
+        #Aca recorremos los registros  y vamos chequeando cuales tienen alguno de los 2 campos vacios para agregarlos a la lista incompletos
+        for nro_fila, fila in enumerate(lector, start=2):
+            lat_txt = fila[idx_lat].strip()
+            lon_txt = fila[idx_lon].strip()
+
+            if lat_txt != "" and lon_txt == "": #Logicamente aca agregamos los que tienen latitud pero no longitud
+                incompletos.append(f"Fila {nro_fila}: Tiene latitud pero falta la longitud.")
+
+
+            elif lon_txt != "" and lat_txt == "": #Y aca al reves, si longitud pero no latitud
+                incompletos.append(f"Fila {nro_fila}: Tiene longitud pero falta la latitud.")
+
+            #No tuvimos en cuenta los casos donde no tiene ninguno de los 2 campos.Deberiamos agregarlo ?
+
+    return incompletos
