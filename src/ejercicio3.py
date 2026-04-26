@@ -183,8 +183,7 @@ def detectar_duplicados(dataset):
     return len(duplicados), duplicados #devolvemos la lista con la cantidad de duplicados
 
 #----------3e----------
-
- def Detectar_invalidos_countryCode (dataset):
+def Detectar_invalidos_countryCode(dataset):
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
@@ -210,4 +209,46 @@ def detectar_duplicados(dataset):
                     countries.get(valor)
                 except KeyError:
                      errores.append(f"Fila {i}: countryCode invalido - '{valor}'")
+    return len(errores), errores
+
+#----------3f----------
+def validar_incertidumbre(dataset):
+    """
+    Detecta registros donde la incertidumbre (coordinateUncertaintyInMeters):
+    - No sea numérica.
+    - Sea negativa.
+    - Sea mayor a 100 metros.
+    """
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+    
+    idx_inc = indices.get('coordinateUncertaintyInMeters')
+    
+    if idx_inc is None:
+        return f"La columna 'coordinateUncertaintyInMeters' no existe en {dataset}."
+    #agrego una lista con los errores
+    errores = []
+    
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+        
+        for nro_fila, fila in enumerate(lector, start=2):   #el primer dato real está en la Fila 2(la 1 eran los encabezados). Usar start=2 hace que los reportes de error coincidan
+            if idx_inc >= len(fila):
+                continue
+                
+            valor_txt = fila[idx_inc].strip()
+            
+            if valor_txt == "":
+                continue    # Los nulos ya los tratamos en el Punto 2, acá buscamos inválidos
+            
+            try:
+                valor = float(valor_txt)
+                if valor < 0:
+                    errores.append(f"Fila {nro_fila}: Valor negativo ({valor_txt})")
+                elif valor > 100:
+                    errores.append(f"Fila {nro_fila}: Valor fuera de rango (>100): {valor_txt}")
+            except ValueError:
+                errores.append(f"Fila {nro_fila}: No es un número válido: '{valor_txt}'")
+                
     return len(errores), errores
