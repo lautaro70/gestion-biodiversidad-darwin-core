@@ -374,3 +374,47 @@ def validar_coordenadas_sudamerica(dataset):
                 pass
                 
     return len(errores), errores
+
+#----------3i----------
+def auditar_coordenada_generica(dataset, nombre_columna, min_glob, max_glob, min_sa, max_sa):
+    """Función base REUTILIZABLE para auditar cualquier columna de coordenadas"""
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+    
+    if isinstance(indices, str): return 0, [indices]
+    
+    idx = indices.get(nombre_columna)
+    if idx is None: return 0, [f"No existe '{nombre_columna}' en {dataset}"]
+
+    errores = []
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        for i, fila in enumerate(lector, start=2):
+            if idx >= len(fila): continue
+            
+            val_txt = fila[idx].strip()
+            if val_txt == "": continue
+
+            try:
+                val = float(val_txt)
+                # 1. Validación Global
+                if not (min_glob <= val <= max_glob):
+                    errores.append(f"Fila {i}: Inválida globalmente ({val})")
+                # 2. Validación Sudamérica
+                elif not (min_sa <= val <= max_sa):
+                    errores.append(f"Fila {i}: Fuera de Sudamérica ({val})")
+            except ValueError:
+                # 3. Validación de Tipo
+                errores.append(f"Fila {i}: Formato erróneo ('{val_txt}')")
+
+    return len(errores), errores
+
+def auditar_columna_latitud(dataset):
+    # Rango global lat: [-90, 90] | Rango SA: [LAT_MIN_SA, LAT_MAX_SA]
+    return auditar_coordenada_generica(dataset, 'decimalLatitude', -90.0, 90.0, LAT_MIN_SA, LAT_MAX_SA)
+
+def auditar_columna_longitud(dataset):
+    # Rango global lon: [-180, 180] | Rango SA: [LON_MIN_SA, LON_MAX_SA]
+    return auditar_coordenada_generica(dataset, 'decimalLongitude', -180.0, 180.0, LON_MIN_SA, LON_MAX_SA)
