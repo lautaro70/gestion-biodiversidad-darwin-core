@@ -252,3 +252,73 @@ def validar_incertidumbre(dataset):
                 errores.append(f"Fila {nro_fila}: No es un número válido: '{valor_txt}'")
                 
     return len(errores), errores
+
+#----------3g----------
+def registros_taxonomia_incompleta(dataset):
+    """Función auxiliar para el 3G. Cuenta cuántos registros tienen
+    campos taxonómicos básicos vacíos."""
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+    
+    if isinstance(indices, str):
+        return 0
+
+    # Defino qué columnas consideramos "Información Taxonómica"
+    cols_taxonomicas = ['kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
+    
+    # Busco los índices de esas columnas (ignoro las que no existan en el dataset)
+    indices_tax = [indices.get(col) for col in cols_taxonomicas if indices.get(col) is not None]
+    
+    incompletos = 0
+    
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+        
+        for fila in lector:
+            # Reviso si alguna de las columnas taxonómicas está en blanco
+            es_incompleto = False
+            for idx in indices_tax:
+                if idx < len(fila) and fila[idx].strip() == "":
+                    es_incompleto = True
+                    break # Con que falte un solo dato (ej: la familia), ya es incompleto
+            
+            if es_incompleto:
+                incompletos += 1
+                
+    return incompletos
+
+def generar_resumen_calidad(dataset):
+    """
+    Punto 3.G: Genera un resumen de calidad agrupando todas las métricas.
+    Retorna un diccionario y un texto formateado.
+    """
+    indices = obtener_indices_columnas(dataset)
+    if isinstance(indices, str):
+        return None, f"Error: {indices}"
+
+    # Recopilo todas las métricas llamando a las funciones
+    total = contar_registros(dataset)
+    cant_coord, _ = validar_coordenadas_rango(dataset)
+    cant_fechas, _ = verificar_fechas(dataset)
+    cant_duplicados, _ = detectar_duplicados(dataset)
+    cant_tax_incompleta = registros_taxonomia_incompleta(dataset)
+
+    #Armo el diccionario que pide el enunciado
+    resumen_dict = {
+        "dataset": dataset,
+        "total_registros": total,
+        "coordenadas_invalidas": cant_coord,
+        "fechas_invalidas": cant_fechas,
+        "duplicados": cant_duplicados,
+        "taxonomia_incompleta": cant_tax_incompleta}
+    #Armamos el reporte en texto (string)
+    reporte_texto = f"=== REPORTE DE CALIDAD: {dataset.upper()} ===\n"
+    reporte_texto += f"Total de registros: {total}\n"
+    reporte_texto += f" - Coordenadas inválidas: {cant_coord}\n"
+    reporte_texto += f" - Fechas inválidas: {cant_fechas}\n"
+    reporte_texto += f" - Registros duplicados: {cant_duplicados}\n"
+    reporte_texto += f" - Taxonomía incompleta: {cant_tax_incompleta}\n"
+    reporte_texto += "========================================\n"
+
+    return resumen_dict, reporte_texto
