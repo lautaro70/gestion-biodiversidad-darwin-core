@@ -1,58 +1,34 @@
 from pathlib import Path
 import csv
 
-def mostrar_primeras_filas_Conicet():
-    base = Path(__file__).parent 
-    ruta = base.parent / 'raw_datasets' / 'IADIZA-CONICET' / 'IADIZA-CONICET' / 'occurrence.txt'
-    with open(ruta, 'r') as Conicet_dataset:
-        csv_reader_Conicet = csv.reader(Conicet_dataset, delimiter='\t')
-        header = next(csv_reader_Conicet)
+def mostrar_primeras_filas(dataset):
+    """Abre el archivo principal y muestra las primeras 10 filas."""
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    
+    if ruta is None:
+        return f"Dataset '{dataset}' no reconocido."
         
-        for i,row in enumerate(csv_reader_Conicet):
-            print (row)
-            if i >= 9:
-                break
-            
-def mostrar_primeras_filas_Inaturalist ():
-    base = Path(__file__).parent 
-    ruta = base.parent / 'raw_datasets' / 'Inaturalist' / 'Inaturalist' / 'observations.csv'
-    with open(ruta, 'r') as Inaturalist_dataset:
-        csv_reader_Inaturalist = csv.reader(Inaturalist_dataset, delimiter=',')
-        header = next(csv_reader_Inaturalist)
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector_csv = csv.reader(archivo, delimiter=sep)
         
-        for i,row in enumerate(csv_reader_Inaturalist):
-            print (row)
-            if i >= 9:
-                break
-
-def mostrar_primeras_filas_XenoCanto ():
-    base = Path(__file__).parent 
-    ruta = base.parent / 'raw_datasets' / 'XenoCanto' / 'XenoCanto' / 'Occurrence.txt'
-    with open(ruta, 'r',encoding='utf-8') as XenoCanto_dataset:
-        csv_reader_XenoCanto = csv.reader(XenoCanto_dataset, delimiter=',')
-        header = next(csv_reader_XenoCanto)
+        # Opcional: Imprimir encabezado primero
+        header = next(lector_csv)
+        print(f"--- ENCABEZADOS: {header[:5]}... ---") # Muestro los primeros 5 para no saturar
         
-        for i,row in enumerate(csv_reader_XenoCanto):
-            print (row)
-            if i >= 9:
+        for i, row in enumerate(lector_csv):
+            print(row)
+            if i >= 8: # (llega hasta 9 porque ya leímos el header)
                 break
 
 def obtener_ruta_y_separador(dataset):
-    base = Path(__file__).parent 
-    ruta_raiz = base.parent 
-    
-    if dataset == "IADIZA":
-        ruta = ruta_raiz / 'raw_datasets' / 'IADIZA-CONICET' / 'IADIZA-CONICET' / 'occurrence.txt'
-        sep = '\t'
-    elif dataset == "Inaturalist":
-        ruta = ruta_raiz / 'raw_datasets' / 'Inaturalist' / 'Inaturalist' / 'observations.csv'
-        sep = ','
-    elif dataset == "XenoCanto":
-        ruta = ruta_raiz / 'raw_datasets' / 'XenoCanto' / 'XenoCanto' / 'occurrence.txt'
-        sep = ','
-    else:
-        return None, None
-    return ruta, sep			
+    base = Path(__file__).parent.parent 
+    # El diccionario guarda { "Nombre": (ruta, separador) }
+    config_datasets = {
+        "IADIZA": (base / 'raw_datasets' / 'IADIZA-CONICET' / 'IADIZA-CONICET' / 'occurrence.txt', '\t'),
+        "Inaturalist": (base / 'raw_datasets' / 'Inaturalist' / 'Inaturalist' / 'observations.csv', ','),
+        "XenoCanto": (base / 'raw_datasets' / 'XenoCanto' / 'XenoCanto' / 'Occurrence.txt', ',')}
+    # El método .get() busca la clave. Si no la encuentra, devuelve (None, None)
+    return config_datasets.get(dataset, (None, None))	
 
 # INICIO DEL INCISO 2b 
 #Hacer una funcion con las columnas de los datasets
