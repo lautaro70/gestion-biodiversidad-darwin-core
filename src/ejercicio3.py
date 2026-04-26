@@ -1,6 +1,7 @@
 from pathlib import Path
 import csv
 from Ejercicio2A import obtener_ruta_y_separador, obtener_indices_columnas, contar_registros
+from iso3166 import countries
 
 
 
@@ -113,3 +114,33 @@ def detectar_duplicados(dataset):
                     todos_los_ids.append(id_actual) #Pero si no esta en todos los ids, lo agregamos a todos porque es la pirmera vez que aparece
 
     return len(duplicados), duplicados #devolvemos la lista con la cantidad de duplicados
+
+#----------3e----------
+
+ def Detectar_invalidos_countryCode (dataset):
+
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+
+    idx_countryCode = indices.get('countryCode')
+
+    if idx_countryCode is None:
+        return 'No Existe el campo countryCode'
+
+    errores = []
+
+    with open(ruta, 'r', encoding= 'utf-8')  as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next (lector)
+
+        for i,fila in enumerate (lector, start=2):
+            valor = fila[idx_countryCode].strip().upper()
+
+            if valor != '':
+                if valor in {'ZZ','XZ'}:
+                    continue
+                try:
+                    countries.get(valor)
+                except KeyError:
+                     errores.append(f"Fila {i}: countryCode invalido - '{valor}'")
+    return len(errores), errores
