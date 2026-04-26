@@ -322,3 +322,55 @@ def generar_resumen_calidad(dataset):
     reporte_texto += "========================================\n"
 
     return resumen_dict, reporte_texto
+
+#----------3h----------
+# Constantes de cotas geográficas para América del Sur
+LAT_MAX_SA = 15.0
+LAT_MIN_SA = -60.0
+LON_MAX_SA = -30.0
+LON_MIN_SA = -90.0
+
+def validar_coordenadas_sudamerica(dataset):
+    """Verifica que las coordenadas caigan dentro del territorio de América del Sur.
+    Retorna la cantidad y el detalle de los registros que caen fuera."""
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+    
+    if isinstance(indices, str):
+        return 0, [indices]
+
+    idx_lat = indices.get('decimalLatitude')
+    idx_lon = indices.get('decimalLongitude')
+    
+    if idx_lat is None or idx_lon is None:
+        return f"Faltan columnas de coordenadas en {dataset}."
+
+    errores = []
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=sep)
+        next(lector)
+
+        for nro_fila, fila in enumerate(lector, start=2):
+            if idx_lat >= len(fila) or idx_lon >= len(fila):
+                continue
+                
+            lat_txt = fila[idx_lat].strip()
+            lon_txt = fila[idx_lon].strip()
+
+            if lat_txt == "" or lon_txt == "":
+                continue
+
+            try:
+                lat = float(lat_txt)
+                lon = float(lon_txt)
+
+                # Validamos si están FUERA de nuestra "caja" sudamericana
+                if not (LAT_MIN_SA <= lat <= LAT_MAX_SA) or not (LON_MIN_SA <= lon <= LON_MAX_SA):
+                    errores.append(f"Fila {nro_fila}: Fuera de Sudamérica (Lat: {lat}, Lon: {lon})")
+                    
+            except ValueError:
+                # Si no es un número, lo ignoramos acá porque ya lo detecta el Punto 3.A
+                pass
+                
+    return len(errores), errores
