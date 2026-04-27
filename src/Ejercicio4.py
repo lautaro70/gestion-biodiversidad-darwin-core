@@ -154,63 +154,59 @@ def registro_a_fila(dataset, registro):
 
     return fila
 
-#----------4f-----------
-def insertar_registro_teclado(dataset):
-    """Pide datos por teclado, los valida y los inserta en un nuevo archivo
-    dentro de la carpeta 'processed_datasets'. Si el archivo ya existe, lo actualiza."""
-    ruta, sep = obtener_ruta_y_separador(dataset)
-    if not ruta:
-        return "Dataset no reconocido."
-
-    #Definimos la ruta de destino en la nueva carpeta
-    base = Path(__file__).parent.parent
-    carpeta_dest = base / 'processed_datasets' / dataset
-    # exist_ok=True evita que el programa explote si la carpeta ya está creada
-    #.mkdir Creá una nueva carpeta en la ruta que guardé en la variable carpeta_dest, parents=true crea al padre si no existe
-    carpeta_dest.mkdir(parents=True, exist_ok=True) 
-    ruta_dest = carpeta_dest / f"{dataset}_processed.csv"
-
-    #Generamos registro vacío
+# --- FUNCIÓN AUXILIAR para pedir los datos (nuevas filas) ---
+def crear_registro_interactivo(dataset):
+    """
+    Pide por teclado los datos esenciales, los valida y retorna la fila lista.
+    Si hay error, retorna None y los errores.
+    """
     columnas = columnas_dataset(dataset)
     nuevo_registro = generar_registro_vacio(columnas)
-
-    #Pedimos los datos por teclado (Solo los esenciales)
-    print(f"\n--- Ingresando nuevo registro para {dataset} ---")
-    print("Nota: Solo pediremos los campos principales. El resto quedará vacío.")
-    
     campos_clave = ['catalogNumber', 'decimalLatitude', 'decimalLongitude', 'eventDate', 'countryCode', 'coordinateUncertaintyInMeters', 'scientificName']
 
     for campo in campos_clave:
         if campo in columnas:
-            valor = input(f"Ingrese {campo} (presione Enter para dejar vacío): ")
+            valor = input(f"Ingrese {campo} (Enter para dejar vacío): ")
             if valor.strip() != "":
                 nuevo_registro[campo] = valor.strip()
 
-    # Validamos antes de guardar
     es_valido, errores = validar_registro(dataset, nuevo_registro)
-    if not es_valido:
-        return f"Inserción cancelada. El registro tiene errores: {errores}"
-
-    #Convertimos a fila (esto le asigna el ID automáticamente gracias al 4D)
-    nueva_fila = registro_a_fila(dataset, nuevo_registro)
-
-    #Lógica de escritura eficiente (sin cargar todo a memoria)
-    if ruta_dest.exists():
-        # Si el procesado ya existe, lo abrimos en modo 'a' (append) y agregamos al final
-        with open(ruta_dest, 'a', encoding='utf-8', newline='') as f_dest:
-            escritor = csv.writer(f_dest, delimiter=sep)
-            escritor.writerow(nueva_fila)
-        return f" Registro añadido al archivo procesado existente."
+    
+    if es_valido:
+        return registro_a_fila(dataset, nuevo_registro), None
     else:
-        # Si no existe, copiamos el original línea por línea y agregamos el nuevo al final
-        with open(ruta, 'r', encoding='utf-8') as f_orig, open(ruta_dest, 'w', encoding='utf-8', newline='') as f_dest:
+        return None, errores
 
-            lector = csv.reader(f_orig, delimiter=sep)
+#------4f (Versión Refactorizada) ------
+def insertar_registro_teclado(dataset):
+    """Pide datos por teclado, los valida y los inserta en un nuevo archivo
+    dentro de la carpeta 'processed_datasets'. Si el archivo ya existe, lo actualiza."""
+    ruta_orig, sep = obtener_ruta_y_separador(dataset)
+    if not ruta_orig: return "Dataset no reconocido."
+
+    # Definimos rutas
+    carpeta_dest = Path(__file__).parent.parent / 'processed_datasets' / dataset
+    # exist_ok=True evita que el programa explote si la carpeta ya está creada
+    #.mkdir Creá una nueva carpeta en la ruta que guardé en la variable carpeta_dest, parents=true crea al padre si no existe
+    carpeta_dest.mkdir(parents=True, exist_ok=True)
+    ruta_dest = carpeta_dest / f"{dataset}_processed.csv"
+
+    print(f"\n--- Ingresando UN registro para {dataset} ---")
+    
+    #Usamos el motor reutilizable
+    nueva_fila, errores = crear_registro_interactivo(dataset)
+    
+    if not nueva_fila:
+        return f"Error: {errores}"
+
+    #Guardamos (Escribimos una sola vez)
+    if ruta_dest.exists():
+        with open(ruta_dest, 'a', encoding='utf-8', newline='') as f_dest:
+            csv.writer(f_dest, delimiter=sep).writerow(nueva_fila)
+    else:
+        with open(ruta_orig, 'r', encoding='utf-8') as f_orig, open(ruta_dest, 'w', encoding='utf-8', newline='') as f_dest:
             escritor = csv.writer(f_dest, delimiter=sep)
-
-            for fila in lector:
-                escritor.writerow(fila) # Copiamos la historia
+            for fila in csv.reader(f_orig, delimiter=sep): escritor.writerow(fila)
+            escritor.writerow(nueva_fila)
             
-            escritor.writerow(nueva_fila) # Insertamos el nuevo
-            
-        return f"Archivo procesado creado exitosamente con el nuevo registro."
+    return "Registro único guardado."
