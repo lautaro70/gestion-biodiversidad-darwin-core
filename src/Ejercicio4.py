@@ -2,7 +2,7 @@ from pathlib import Path
 import csv
 from datetime import datetime
 from iso3166 import countries
-from Ejercicio2A import obtener_ruta_y_separador,columnas_dataset
+from Ejercicio2A import obtener_ruta_y_separador,columnas_dataset,contar_registros
 
 #------4a------
 
@@ -111,3 +111,45 @@ def validar_registro (dataset, registro):
     es_valido = len(errores) == 0
     return es_valido, errores
 
+#------4d------
+
+def registro_a_fila(dataset, registro):
+    """
+    Convierte un registro (diccionario del 4A) en una lista lista para 
+    agregar al CSV, deduciendo y agregando el ID correspondiente a cada dataset.
+    """
+
+    columnas = columnas_dataset(dataset)
+    if isinstance (columnas,str): # si devolvió un string = hubo error
+        return f"Dataset '{dataset}' no reconocido."
+    
+    # Generamos el ID según cada dataset
+    if dataset== "IADIZA": 
+        # Su occurrenceID se forma como IADIZA:COI:catalogNumber
+        catalog = registro.get('catalogNumber', '')
+        registro['occurrenceID']= f"IADIZA:COI:{catalog}"
+        # gbifID lo asigna GBIF, entonces lo dejamos vacío
+        registro ['gbifID']=''
+    
+    elif dataset == "Inaturalist":
+        # El id es autoincremental, necesitamos saber cuantos registros hay para calcular el ID que sigue
+        total = contar_registros(dataset)
+        registro['id'] = str(total + 1)
+    
+    elif dataset == "XenoCanto":
+        # El id ( XXXXXX@XC )se forma a partir del catalogNumber
+        catalog = registro.get('catalogNumber', '')
+         # catalogNumber es XC999540, entonces nos quedamos solo con el número (es decir, sin XC)
+        numero = catalog.replace('XC', '')
+        registro['id'] = f"{numero}@XC"
+    
+    # Convertimos el diccionario a lista en el orden de las columnas del CSV
+    fila = []
+    for columna in columnas:
+        valor = registro.get(columna)
+        if valor is None:
+            fila.append('')
+        else:
+            fila.append(str(valor))
+
+    return fila
