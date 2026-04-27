@@ -210,3 +210,40 @@ def insertar_registro_teclado(dataset):
             escritor.writerow(nueva_fila)
             
     return "Registro único guardado."
+
+#------4g (Extendiendo la lógica del 4)f)) ------
+def insertar_multiples_registros(dataset):
+    """Punto 4.G: Extiende el 4.F para insertar MÚLTIPLES registros en lote."""
+    ruta_orig, sep = obtener_ruta_y_separador(dataset)
+    if not ruta_orig: return "Dataset no reconocido."
+
+    carpeta_dest = Path(__file__).parent.parent / 'processed_datasets' / dataset
+    carpeta_dest.mkdir(parents=True, exist_ok=True)
+    ruta_dest = carpeta_dest / f"{dataset}_processed.csv"
+
+    nuevas_filas = []
+    #Bucle que reutiliza el mismo motor del 4.F
+    while True:
+        fila, errores = crear_registro_interactivo(dataset)
+        if fila:
+            nuevas_filas.append(fila)
+            print("Registro encolado.")
+        else:
+            print(f"Error: {errores}")
+            
+        if input("\n¿Ingresar otro? (s/n): ").lower() != 's':
+            break
+
+    if not nuevas_filas: return "Operación cancelada."
+
+    #Guardamos (Escribimos todas las filas de una sola vez)
+    if ruta_dest.exists():
+        with open(ruta_dest, 'a', encoding='utf-8', newline='') as f_dest:
+            csv.writer(f_dest, delimiter=sep).writerows(nuevas_filas)   # Note el plural: writerows
+    else:
+        with open(ruta_orig, 'r', encoding='utf-8') as f_orig, open(ruta_dest, 'w', encoding='utf-8', newline='') as f_dest:
+            escritor = csv.writer(f_dest, delimiter=sep)
+            for fila in csv.reader(f_orig, delimiter=sep): escritor.writerow(fila)
+            escritor.writerows(nuevas_filas)
+
+    return f"{len(nuevas_filas)} registros guardados."
