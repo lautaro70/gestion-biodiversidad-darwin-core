@@ -4,13 +4,161 @@ from datetime import datetime
 from Ejercicio2A import obtener_ruta_y_separador, obtener_indices_columnas, contar_registros
 from iso3166 import countries
 
+# FUNCIONES BASE DE VALIDACIÓN
 
+def validar_latitud(valor):
+    """
+    Valida una latitud individual.
+    Recibe: un string o número.
+    Devuelve: (bool, str) -> (es_valida, mensaje_error)
+    """
+    if valor is None or str(valor).strip() == "":
+        return False, "Latitud vacía"
+    
+    txt = str(valor).strip()
+    # Verifico si es número (permite punto decimal y signo menos)
+    es_numero = txt.replace('.', '', 1).replace('-', '', 1).isdigit()
+    
+    if not es_numero:
+        return False, f"'{txt}' no es un número válido"
+    
+    lat = float(txt)
+    if -90 <= lat <= 90:
+        return True, ""
+    else:
+        return False, f"Latitud {lat} fuera de rango [-90, 90]"
+
+
+def validar_longitud(valor):
+    """
+    Valida una longitud individual.
+    Devuelve: (bool, str) -> (es_valida, mensaje_error)
+    """
+    if valor is None or str(valor).strip() == "":
+        return False, "Longitud vacía"
+    
+    txt = str(valor).strip()
+    es_numero = txt.replace('.', '', 1).replace('-', '', 1).isdigit()
+    
+    if not es_numero:
+        return False, f"'{txt}' no es un número válido"
+    
+    lon = float(txt)
+    if -180 <= lon <= 180:
+        return True, ""
+    else:
+        return False, f"Longitud {lon} fuera de rango [-180, 180]"
+
+
+def validar_par_coordenadas(lat_valor, lon_valor):
+    """
+    Valida un par de coordenadas juntas.
+    Devuelve: (bool, lista_de_errores)
+    """
+    errores = []
+    
+    valida_lat, error_lat = validar_latitud(lat_valor)
+    if not valida_lat:
+        errores.append(error_lat)
+    
+    valida_lon, error_lon = validar_longitud(lon_valor)
+    if not valida_lon:
+        errores.append(error_lon)
+    
+    # Caso especial: una completa y la otra vacía (punto 3B)
+    lat_vacia = lat_valor is None or str(lat_valor).strip() == ""
+    lon_vacia = lon_valor is None or str(lon_valor).strip() == ""
+    
+    if (not lat_vacia and lon_vacia):
+        errores.append("Tiene latitud pero falta longitud")
+    elif (lat_vacia and not lon_vacia):
+        errores.append("Tiene longitud pero falta latitud")
+    
+    return len(errores) == 0, errores
+
+
+def validar_fecha_unica(fecha_str, formatos=None):
+    """
+    Valida una fecha en una lista de formatos.
+    Devuelve: (bool, str) -> (es_valida, mensaje_error)
+    """
+    if fecha_str is None or str(fecha_str).strip() == "":
+        return True, ""  # Vacío se considera válido (solo nos interesan los inválidos)
+    
+    if formatos is None:
+        from datetime import datetime
+        formatos = [
+            "%Y-%m-%d",             
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%fZ",   
+            "%Y-%m-%dT%H:%M:%S%z",  
+            "%Y-%m",                 
+            "%Y",                    
+        ]
+    
+    txt = str(fecha_str).strip()
+    anio_actual = datetime.now().year
+    
+    for formato in formatos:
+        try:
+            fecha = datetime.strptime(txt, formato)
+            if fecha.year > anio_actual:
+                return False, f"Fecha {txt} posterior al año actual"
+            return True, ""
+        except ValueError:
+            continue
+    
+    return False, f"Formato de fecha inválido: '{txt}'"
+
+
+def validar_country_code_unico(codigo):
+    """
+    Valida un countryCode individual.
+    Devuelve: (bool, str)
+    """
+    if codigo is None or str(codigo).strip() == "":
+        return True, ""  # Vacío se considera válido (ya lo cubre punto 2)
+    
+    codigo = str(codigo).strip().upper()
+    
+    if codigo in {'ZZ', 'XZ'}:
+        return True, ""
+    
+    try:
+        from iso3166 import countries
+        countries.get(codigo)
+        return True, ""
+    except KeyError:
+        return False, f"countryCode inválido: '{codigo}'"
+
+
+def validar_incertidumbre_unica(valor):
+    """
+    Valida coordinateUncertaintyInMeters individual.
+    Devuelve: (bool, str)
+    """
+    if valor is None or str(valor).strip() == "":
+        return True, ""  # Vacío se considera válido
+    
+    txt = str(valor).strip()
+    
+    try:
+        num = float(txt)
+        if num < 0:
+            return False, f"Incertidumbre negativa: {num}"
+        elif num > 100:
+            return False, f"Incertidumbre > 100m: {num}"
+        return True, ""
+    except ValueError:
+        return False, f"Incertidumbre no es número: '{txt}'"
 
 #Arranco con el 3a
 
-
-
 def validar_coordenadas_rango(dataset):
+    """
+    Detecta registros con coordenadas inválidas (fuera de rango o no numéricas).
+    Reutiliza validar_par_coordenadas()
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
@@ -18,7 +166,11 @@ def validar_coordenadas_rango(dataset):
     idx_lat = indices.get('decimalLatitude')
     idx_lon = indices.get('decimalLongitude')
 
-    errores=[] #Aca es donde voy a guardar los registros incorrectos
+    if idx_lat is None or idx_lon is None:
+        return 0, [f"No se encontraron columnas de coordenadas en {dataset}"]
+    
+    cantidad_invalidos = 0
+    registros_invalidos = [] #Aca es donde voy a guardar los registros incorrectos
 
 
     with open(ruta, 'r', encoding='utf-8') as archivo:
@@ -26,25 +178,16 @@ def validar_coordenadas_rango(dataset):
         next(lector)
 
         for nro_fila, fila in enumerate(lector, start=2):
-            lat_txt = fila[idx_lat].strip() #El strip saca los espacios en blanco
-            lon_txt = fila[idx_lon].strip()
-
-            #Aca lo que hago es que me muestre el numero solamente en cada latitud o longitud, sin los signos y puntos
-            #El numero 1 significa que solo le saca el primer guion o coma 
-            es_lat_num = lat_txt.replace('.','',1).replace('-','',1).isdigit()
-            es_lon_num = lon_txt.replace('.','',1).replace('-','',1).isdigit()
-
-            if not es_lat_num or not es_lon_num:
-                errores.append(f"Fila {nro_fila}: Error, la coordenada no es un número válido.")
-            else:
-                lat = float(lat_txt)
-                lon = float(lon_txt)
-                if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-                    errores.append(f"Fila {nro_fila}: Número fuera de rango.")
-
-    return len(errores),errores #Aca devuelve la lista con los errores
-
-#Para tener la cantidad de errores hacemos un len y la tenemos
+            lat_valor = fila[idx_lat] if idx_lat < len(fila) else ""
+            lon_valor = fila[idx_lon] if idx_lon < len(fila) else ""
+            
+            es_valido, errores = validar_par_coordenadas(lat_valor, lon_valor)
+            
+            if not es_valido:
+                cantidad_invalidos += 1
+                registros_invalidos.append(f"Fila {nro_fila}: {' | '.join(errores)}")
+    
+    return cantidad_invalidos, registros_invalidos
 
 
 #----3b----
@@ -80,7 +223,7 @@ def validar_coordenadas_incompletas(dataset):
 
             #No tuvimos en cuenta los casos donde no tiene ninguno de los 2 campos.Deberiamos agregarlo ?
 
-    return incompletos
+    return len(incompletos), incompletos 
 
 
 #------ 3c ------
@@ -88,6 +231,7 @@ def verificar_fechas(dataset):
     """
     Revisa que las fechas de los datasets sean válidas. 
     Se consideran válidas a las fechas que tengan el formato adecuado y no sean mayores al año actual
+    reutiliza validar_fecha_unica()
     """
    
     ruta, sep = obtener_ruta_y_separador(dataset)
@@ -103,53 +247,27 @@ def verificar_fechas(dataset):
     #revisa si el nombre del dataset está en el diccionario, sino devuelve una lista vacia (false)
     columnas_fecha = columnas_por_dataset.get(dataset, [])
     if not columnas_fecha:
-        return f"No se reconoce el dataset '{dataset}'"
+        return 0, [f"No se reconocen columnas de fecha para '{dataset}'"]
 
-    # escribimos los formatos de fechas válidos (formatos que define el estándar Darwin Core y GBIF)
-    formatos = [
-    "%Y-%m-%d",             
-    "%Y-%m-%dT%H:%M:%SZ",
-    "%Y-%m-%dT%H:%M:%S.%fZ",   
-    "%Y-%m-%dT%H:%M:%S%z",  
-    "%Y-%m",                 
-    "%Y",                    
-    ]
-
-    anio_actual = datetime.now().year
     errores = []
-
+    
     with open(ruta, 'r', encoding='utf-8') as archivo:
         lector = csv.reader(archivo, delimiter=sep)
         next(lector)
-
+        
         for nro_fila, fila in enumerate(lector, start=2):
-            for columna in columnas_fecha:  #para cada fila revisamos cada columna de fecha
-                idx = indices.get(columna)  #obtenemos el indice de la columna
-                if idx is None:
-                    continue    #si la columna no existe en el dataset la saltea
-
-                fecha_txt = fila[idx].strip()  #nos quedamos con la fecha
-
-                if fecha_txt == "":  #si está vacio lo saltea
+            for columna in columnas_fecha:
+                idx = indices.get(columna)
+                if idx is None or idx >= len(fila):
                     continue
-
-                fecha_valida = False
-                for formato in formatos:  #prueba los formatos para ver cual es el válido
-                    try:
-                        #strptime convierte un texto a fecha usando el formato que le digamos
-                        fecha = datetime.strptime(fecha_txt, formato)
-                        fecha_valida = True
-                        if fecha.year > anio_actual:
-                            errores.append(f"Fila {nro_fila} columna '{columna}': Fecha posterior al año actual: {fecha_txt}")
-                        break  #si es el formato correcto frenamos
-                    except ValueError:
-                        continue 
-
-                if not fecha_valida:
-                    errores.append(f"Fila {nro_fila} columna '{columna}': Formato inválido: {fecha_txt}")
-
-    return len(errores), errores  
-
+                
+                fecha_valor = fila[idx]
+                es_valida, error_msg = validar_fecha_unica(fecha_valor)
+                
+                if not es_valida:
+                    errores.append(f"Fila {nro_fila} columna '{columna}': {error_msg}")
+    
+    return len(errores), errores
 #-------3d ------
 
 def detectar_duplicados(dataset):
@@ -184,6 +302,10 @@ def detectar_duplicados(dataset):
 
 #----------3e----------
 def Detectar_invalidos_countryCode(dataset):
+    """
+    Detecta countryCodes inválidos.
+    reutiliza validar_country_code_unico()
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
@@ -191,7 +313,7 @@ def Detectar_invalidos_countryCode(dataset):
     idx_countryCode = indices.get('countryCode')
 
     if idx_countryCode is None:
-        return 'No Existe el campo countryCode'
+        return 0, ['No existe el campo countryCode']
 
     errores = []
 
@@ -200,15 +322,13 @@ def Detectar_invalidos_countryCode(dataset):
         next (lector)
 
         for i,fila in enumerate (lector, start=2):
-            valor = fila[idx_countryCode].strip().upper()
-
-            if valor != '':
-                if valor in {'ZZ','XZ'}:
-                    continue
-                try:
-                    countries.get(valor)
-                except KeyError:
-                     errores.append(f"Fila {i}: countryCode invalido - '{valor}'")
+            if idx_countryCode >= len(fila):
+                continue
+            valor = fila[idx_countryCode]
+            es_valido, error_msg = validar_country_code_unico(valor)
+            if not es_valido:
+                errores.append(f"Fila {i}: {error_msg}")
+    
     return len(errores), errores
 
 #----------3f----------
@@ -218,6 +338,7 @@ def validar_incertidumbre(dataset):
     - No sea numérica.
     - Sea negativa.
     - Sea mayor a 100 metros.
+    reutiliza validar_incertidumbre_unica()
     """
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
@@ -225,7 +346,7 @@ def validar_incertidumbre(dataset):
     idx_inc = indices.get('coordinateUncertaintyInMeters')
     
     if idx_inc is None:
-        return f"La columna 'coordinateUncertaintyInMeters' no existe en {dataset}."
+         return 0, [f"No existe 'coordinateUncertaintyInMeters' en {dataset}"]
     #agrego una lista con los errores
     errores = []
     
@@ -237,20 +358,12 @@ def validar_incertidumbre(dataset):
             if idx_inc >= len(fila):
                 continue
                 
-            valor_txt = fila[idx_inc].strip()
+            valor = fila[idx_inc]
+            es_valido, error_msg = validar_incertidumbre_unica(valor)
             
-            if valor_txt == "":
-                continue    # Los nulos ya los tratamos en el Punto 2, acá buscamos inválidos
-            
-            try:
-                valor = float(valor_txt)
-                if valor < 0:
-                    errores.append(f"Fila {nro_fila}: Valor negativo ({valor_txt})")
-                elif valor > 100:
-                    errores.append(f"Fila {nro_fila}: Valor fuera de rango (>100): {valor_txt}")
-            except ValueError:
-                errores.append(f"Fila {nro_fila}: No es un número válido: '{valor_txt}'")
-                
+            if not es_valido:
+                errores.append(f"Fila {nro_fila}: {error_msg}")
+    
     return len(errores), errores
 
 #----------3g----------
@@ -343,7 +456,7 @@ def validar_coordenadas_sudamerica(dataset):
     idx_lon = indices.get('decimalLongitude')
     
     if idx_lat is None or idx_lon is None:
-        return f"Faltan columnas de coordenadas en {dataset}."
+        return 0, [f"Faltan columnas de coordenadas en {dataset}."]
 
     errores = []
 
