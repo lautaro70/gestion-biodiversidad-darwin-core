@@ -19,97 +19,58 @@ def generar_registro_vacio(columnas):
     return registro
     
 #------4c------
-
-def validar_registro (dataset, registro):
-    """ Valida un registro antes de insertarlo,
-        reutilizando las validaciones del ejercicio 3."""
+def validar_registro(dataset, registro):
+    """
+    Valida un registro antes de insertarlo.
+    REUTILIZA las funciones base de validación del ejercicio 3.
+    """
+    # Importamos las funciones base desde ejercicio3
+    from ejercicio3 import (
+        validar_par_coordenadas,
+        validar_fecha_unica,
+        validar_country_code_unico,
+        validar_incertidumbre_unica
+    )
+    
     errores = []
     
-    # Obtenemos los valores de latitud y longitud del registro
-    lat_txt = registro.get("decimalLatitude")
-    lon_txt = registro.get("decimalLongitude")
-
-    # Validación 3b: chequear que no falte ninguna coordenada
-    if lat_txt and not lon_txt:
-        errores.append("Tiene latitud pero falta longitud")
-    elif lon_txt and not lat_txt:
-        errores.append("Tiene longitud pero falta latitud")
-
-    # Validación 3a: chequear que las coordenadas sean números válidos y estén en rango
-    if lat_txt and lon_txt:
-        es_lat_num = lat_txt.replace('.','',1).replace('-','',1).isdigit()
-        es_lon_num = lon_txt.replace('.','',1).replace('-','',1).isdigit()
-        
-        if not es_lat_num or not es_lon_num:
-            errores.append("Las coordenadas no son números válidos")
-        else:
-            lat = float(lat_txt)
-            lon = float(lon_txt)
-            if not (-90 <= lat <= 90):
-                errores.append("La latitud está fuera de rango [-90, 90]")
-            if not (-180 <= lon <= 180):
-                errores.append("La longitud está fuera de rango [-180, 180]")
+    # Validar coordenadas (3a y 3b juntos)
+    lat_valor = registro.get("decimalLatitude")
+    lon_valor = registro.get("decimalLongitude")
     
-    # Columnas de fecha a validar
+    son_validas, errores_coord = validar_par_coordenadas(lat_valor, lon_valor)
+    if not son_validas:
+        errores.extend(errores_coord)
+    
+    # Validar fechas (3c)
     columnas_fecha = {
         "IADIZA": ['modified', 'eventDate', 'verbatimEventDate', 'dateIdentified', 'georeferencedDate', 'lastInterpreted', 'lastParsed', 'lastCrawled'],
         "Inaturalist": ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified'],
         "XenoCanto": ['eventDate', 'verbatimEventDate']
     }
-
-    formatos = [
-    "%Y-%m-%d",             
-    "%Y-%m-%dT%H:%M:%SZ",
-    "%Y-%m-%dT%H:%M:%S.%fZ",   
-    "%Y-%m-%dT%H:%M:%S%z",  
-    "%Y-%m",                 
-    "%Y",                    
-    ]
-    anio_actual = datetime.now().year
-
-    # Validación 3c: fechas
+    
     for columna in columnas_fecha.get(dataset, []):
-        fecha_txt = registro.get(columna)
-        if not fecha_txt:  # si está vacío lo saltea
+        fecha_valor = registro.get(columna)
+        if fecha_valor is None or str(fecha_valor).strip() == "":
             continue
+        es_valida, error_msg = validar_fecha_unica(fecha_valor)
+        if not es_valida:
+            errores.append(f"Columna '{columna}': {error_msg}")
     
-        fecha_valida = False
-        for formato in formatos:
-            try:
-                fecha = datetime.strptime(fecha_txt, formato)
-                fecha_valida = True
-                if fecha.year > anio_actual:
-                    errores.append(f"Columna '{columna}': fecha posterior al año actual: {fecha_txt}")
-                break
-            except ValueError:
-                continue
+    # Validar countryCode (3e)
+    country_valor = registro.get("countryCode")
+    es_valido, error_msg = validar_country_code_unico(country_valor)
+    if not es_valido and error_msg:
+        errores.append(error_msg)
     
-        if not fecha_valida:
-            errores.append(f"Columna '{columna}': formato de fecha inválido: {fecha_txt}")
+    # Validar incertidumbre (3f)
+    incertidumbre_valor = registro.get("coordinateUncertaintyInMeters")
+    es_valido, error_msg = validar_incertidumbre_unica(incertidumbre_valor)
+    if not es_valido and error_msg:
+        errores.append(error_msg)
     
-    # Validación 3e: countryCode
-    country_code = registro.get("countryCode")
-    if country_code:
-        country_code = country_code.strip().upper()
-        if country_code not in {'ZZ', 'XZ'}:
-            try:
-                countries.get(country_code)
-            except KeyError:
-                errores.append(f"countryCode inválido: '{country_code}'")
-    
-    # Validación 3f: coordinateUncertaintyInMeters
-    incertidumbre = registro.get("coordinateUncertaintyInMeters")
-    if incertidumbre:
-        try:
-            valor = float(incertidumbre)
-            if valor < 0:
-                errores.append("coordinateUncertaintyInMeters es negativo")
-            elif valor > 100:
-                errores.append(f"coordinateUncertaintyInMeters es demasiado grande (>100): {valor}")
-        except ValueError:
-            errores.append(f"coordinateUncertaintyInMeters no es un número válido: '{incertidumbre}'")
-    es_valido = len(errores) == 0
-    return es_valido, errores
+    es_valido_total = len(errores) == 0
+    return es_valido_total, errores
 
 #------4d------
 
