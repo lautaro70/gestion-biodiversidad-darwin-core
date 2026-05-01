@@ -1,5 +1,6 @@
-from pathlib import Path
 import csv
+
+from src.common.dataset_utils import obtener_ruta_y_separador
 
 def mostrar_primeras_filas(dataset):
     """Abre el archivo principal y muestra las primeras 10 filas."""
@@ -19,16 +20,6 @@ def mostrar_primeras_filas(dataset):
             print(row)
             if i >= 8: # (llega hasta 9 porque ya leímos el header)
                 break
-
-def obtener_ruta_y_separador(dataset):
-    base = Path(__file__).parent.parent 
-    # El diccionario guarda { "Nombre": (ruta, separador) }
-    config_datasets = {
-        "IADIZA": (base / 'raw_datasets' / 'IADIZA-CONICET' / 'IADIZA-CONICET' / 'occurrence.txt', '\t'),
-        "Inaturalist": (base / 'raw_datasets' / 'Inaturalist' / 'Inaturalist' / 'observations.csv', ','),
-        "XenoCanto": (base / 'raw_datasets' / 'XenoCanto' / 'XenoCanto' / 'Occurrence.txt', ',')}
-    # El método .get() busca la clave. Si no la encuentra, devuelve (None, None)
-    return config_datasets.get(dataset, (None, None))	
 
 # INICIO DEL INCISO 2b 
 #Hacer una funcion con las columnas de los datasets
