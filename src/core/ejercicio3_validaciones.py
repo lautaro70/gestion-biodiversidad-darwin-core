@@ -1,8 +1,8 @@
 from pathlib import Path
 import csv
 from datetime import datetime
-from src.common.dataset_utils import obtener_ruta_y_separador
-from src.core.ejercicio2_lectura_dataset import obtener_indices_columnas, contar_registros
+from common.dataset_utils import obtener_ruta_y_separador
+from core.ejercicio2_lectura_dataset import obtener_indices_columnas, contar_registros
 from iso3166 import countries
 
 # FUNCIONES BASE DE VALIDACIÓN

@@ -2,8 +2,8 @@ from pathlib import Path
 import csv
 from datetime import datetime
 from iso3166 import countries
-from src.common.dataset_utils import obtener_ruta_y_separador
-from src.core.ejercicio2_lectura_dataset import (
+from common.dataset_utils import obtener_ruta_y_separador
+from core.ejercicio2_lectura_dataset import (
     columnas_dataset,
     contar_registros
 )
@@ -29,7 +29,7 @@ def validar_registro(dataset, registro):
     REUTILIZA las funciones base de validación del ejercicio 3.
     """
     # Importamos las funciones base desde ejercicio3
-    from src.core.ejercicio3_validaciones import (
+    from core.ejercicio3_validaciones import (
         validar_par_coordenadas,
         validar_fecha_unica,
         validar_country_code_unico,

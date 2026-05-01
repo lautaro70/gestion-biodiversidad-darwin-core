@@ -1,6 +1,6 @@
 import csv
 
-from src.common.dataset_utils import obtener_ruta_y_separador
+from common.dataset_utils import obtener_ruta_y_separador
 
 def mostrar_primeras_filas(dataset):
     """Abre el archivo principal y muestra las primeras 10 filas."""
