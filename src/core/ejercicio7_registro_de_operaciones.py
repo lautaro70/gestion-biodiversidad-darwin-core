@@ -15,3 +15,5 @@ def obtener_fecha_hora_actual():
 
 
 #Ejercicio 2-----
+
+def registrar_operacion_en_log(mensaje, tipo="INFO"):
