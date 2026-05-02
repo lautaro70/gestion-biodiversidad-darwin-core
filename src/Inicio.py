@@ -29,7 +29,7 @@ st.info("""
 **Navegación:**  
 Utilice el menú lateral ubicado a la izquierda de la pantalla para desplazarse por las distintas secciones.
 
-**¿Qué información podrá consultar?**
-* **Búsqueda:** *(Próximamente)*        
+**¿Qué información podrá consultar?**      
 * **Estado del sistema:** Muestra un registro histórico (logs) de las operaciones realizadas sobre los datasets.
+* **Búsqueda:** *(Próximamente)*  
 * **Visualización:** *(Próximamente)*""")
