@@ -1,5 +1,35 @@
 import streamlit as st
 
 st.set_page_config(page_title="Aplicacion Biodiversidad grupo 47")
-st.title("Aplicacion Biodiversidad grupo 47")
-st.write("Bienvenido a la aplicacion de Biodiversidad")
+st.title("Aplicacion Biodiversidad - Grupo 47")
+st.subheader("Bienvenido a la aplicacion de Biodiversidad")
+
+st.divider()
+st.header("Propósito de la Aplicación")
+st.write("""
+El objetivo principal de esta herramienta es centralizar, validar y explorar de forma interactiva grandes conjuntos de datos sobre especies.
+
+**¿Por qué es importante?**
+El análisis de datos de biodiversidad es vital para comprender cómo se distribuyen las especies en el planeta, evaluar el impacto ambiental a lo largo del tiempo y tomar decisiones fundamentadas para la conservación y protección de los ecosistemas.
+""")
+st.divider()
+
+st.header("Estándar Darwin Core (DwC)")
+st.write("""
+**¿Qué es?**  
+Es un estándar de datos, básicamente un glosario de términos comunes mantenido por la organización internacional de estándares de biodiversidad.
+
+**¿Para qué se utiliza?**  
+Sirve como un "idioma universal" para compartir información biológica. Al establecer nombres de columnas y formatos estrictos, permite que científicos, museos e instituciones de todo el mundo puedan cruzar e integrar sus investigaciones sin problemas de compatibilidad.
+""")
+
+st.divider()
+st.header("Instrucciones de Uso")
+st.info("""
+**Navegación:**  
+Utilice el menú lateral ubicado a la izquierda de la pantalla para desplazarse por las distintas secciones.
+
+**¿Qué información podrá consultar?**
+* **Búsqueda:** *(Próximamente)*        
+* **Estado del sistema:** Muestra un registro histórico (logs) de las operaciones realizadas sobre los datasets.
+* **Visualización:** *(Próximamente)*""")
