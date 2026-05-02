@@ -3,7 +3,8 @@ import csv
 from datetime import datetime
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import obtener_indices_columnas, contar_registros
-from iso3166 import countries
+from common.constants import country_codes_validos
+
 
 # FUNCIONES BASE DE VALIDACIÓN
 
@@ -118,19 +119,14 @@ def validar_country_code_unico(codigo):
     Devuelve: (bool, str)
     """
     if codigo is None or str(codigo).strip() == "":
-        return True, ""  # Vacío se considera válido (ya lo cubre punto 2)
-    
+        return True, ""
+
     codigo = str(codigo).strip().upper()
-    
-    if codigo in {'ZZ', 'XZ'}:
+
+    if codigo in country_codes_validos:
         return True, ""
-    
-    try:
-        from iso3166 import countries
-        countries.get(codigo)
-        return True, ""
-    except KeyError:
-        return False, f"countryCode inválido: '{codigo}'"
+
+    return False, f"countryCode inválido: '{codigo}'"
 
 
 def validar_incertidumbre_unica(valor):
@@ -308,7 +304,7 @@ def detectar_duplicados(dataset):
 def Detectar_invalidos_countryCode(dataset):
     """
     Detecta countryCodes inválidos.
-    reutiliza validar_country_code_unico()
+    Utiliza validar_country_code_unico()
     """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
@@ -321,18 +317,21 @@ def Detectar_invalidos_countryCode(dataset):
 
     errores = []
 
-    with open(ruta, 'r', encoding= 'utf-8')  as archivo:
+    with open(ruta, 'r', encoding='utf-8') as archivo:
         lector = csv.reader(archivo, delimiter=sep)
-        next (lector)
+        next(lector)
 
-        for i,fila in enumerate (lector, start=2):
+        for i, fila in enumerate(lector, start=2):
             if idx_countryCode >= len(fila):
                 continue
+
             valor = fila[idx_countryCode]
+
             es_valido, error_msg = validar_country_code_unico(valor)
+
             if not es_valido:
                 errores.append(f"Fila {i}: {error_msg}")
-    
+
     return len(errores), errores
 
 #----------3f----------

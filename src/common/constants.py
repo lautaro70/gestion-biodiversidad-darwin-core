@@ -20,3 +20,11 @@ DATASETS = {
         "separator": ","
     }
 }
+
+#Lista de codigos ISO 3166
+country_codes_validos = {
+    "AR", "BR", "CL", "UY", "PY", "PE", "CO", "VE",
+    "MX", "US", "CA", "ES", "FR", "DE", "IT", "GB",
+    "PT", "NL", "BE", "CH", "SE", "NO", "DK", "FI",
+    "JP", "CN", "KR", "IN", "AU", "NZ", "ZA"
+    }
