@@ -17,7 +17,7 @@ from core.ejercicio2_lectura_dataset import (
 def generar_registro_vacio(columnas):
     registro = {}
     for campo in columnas:
-        if campo != "id" and campo != "gbifID" and campo != "occurrenceID":
+        if campo != "id":
             registro[campo]= None
     return registro
     
