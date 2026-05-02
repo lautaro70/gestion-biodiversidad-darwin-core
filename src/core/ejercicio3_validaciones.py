@@ -221,8 +221,11 @@ def validar_coordenadas_incompletas(dataset):
 
             elif lon_txt != "" and lat_txt == "": #Y aca al reves, si longitud pero no latitud
                 incompletos.append(f"Fila {nro_fila}: Tiene longitud pero falta la latitud.")
+            
+            elif lon_txt == "" and lat_txt == "":
+                incompletos.append(f"Fila {nro_fila}: Faltan ambos campos.")
 
-            #No tuvimos en cuenta los casos donde no tiene ninguno de los 2 campos.Deberiamos agregarlo ?
+           
 
     return len(incompletos), incompletos 
 
