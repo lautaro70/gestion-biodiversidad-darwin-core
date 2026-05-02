@@ -3,6 +3,7 @@ from pathlib import Path
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import obtener_indices_columnas
 from core.ejercicio5_actualizacion_registros import obtener_ruta_processed
+from core.ejercicio3_validaciones import validar_country_code_unico,validar_incertidumbre_unica,validar_par_coordenadas,validar_fecha_unica
 
 #------6a------
 
@@ -144,4 +145,94 @@ def eliminar_por_condicion(dataset, valor, columna_de_interes, operador):
 
     return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
 
+#------6e------
 
+def sanitizar_dataset(dataset):
+	"""Elimina los registros que no puedan ser validados. 
+	En caso de haber campos vacios los tomamos como validos """
+	ruta, sep = obtener_ruta_y_separador(dataset)
+	indices = obtener_indices_columnas(dataset)
+
+	ruta_dest = obtener_ruta_processed(dataset)
+
+	ids_vistos = set()
+	#set() es una estructura de datos que no tiene orden y no admite duplicados,
+	#es util porque es mas rapida para buscar elementos, como en este caso los id  
+
+	idx_id = indices.get('occurrenceID')
+	if idx_id is None:
+		idx_id = indices.get('gbifID')
+	if idx_id is None:
+		idx_id = indices.get('id')
+			
+	idx_lat = indices.get('decimalLatitude')
+	idx_lon = indices.get('decimalLongitude')
+	idx_fecha = indices.get('eventDate')
+	idx_cc = indices.get('countryCode')
+	idx_inc = indices.get('coordinateUncertaintyInMeters')
+
+	with open(ruta, 'r', encoding='utf-8') as archivo:
+		with open(ruta_dest, 'w', encoding='utf-8', newline='') as archivo_procesado:
+
+			lector = csv.reader(archivo, delimiter=sep)
+			escritor = csv.writer(archivo_procesado, delimiter=sep)
+
+			header = next(lector)
+			escritor.writerow(header)
+
+			for fila in lector:
+				es_valida = True
+
+				# -------- Duplicados --------
+				if idx_id is not None:
+					if idx_id >= len(fila):
+						es_valida = False  
+					else:
+						id_actual = fila[idx_id].strip()
+						if id_actual == "":
+							es_valida = False  
+						elif id_actual in ids_vistos:
+							es_valida = False 
+						else:
+							ids_vistos.add(id_actual)
+							
+				# No reutilizo la funcion del ejercicio 3d de duplicados porque:
+				# - recorre todo el dataset
+				# - devuelve lista de duplicados
+				# y aca solo queremos eliminar en una sola pasada
+
+				# -------- Coordenadas --------
+				if es_valida and idx_lat is not None and idx_lon is not None:
+					lat = fila[idx_lat] if idx_lat < len(fila) else ""
+					lon = fila[idx_lon] if idx_lon < len(fila) else ""
+					ok, _ = validar_par_coordenadas(lat, lon)
+					if not ok:
+						es_valida = False
+
+				# -------- Fecha --------
+				if es_valida and idx_fecha is not None and idx_fecha < len(fila):
+					fecha = fila[idx_fecha]
+					if fecha:
+						ok, _ = validar_fecha_unica(fecha)
+						if not ok:
+							es_valida = False
+
+				# -------- Country code --------
+				if es_valida and idx_cc is not None and idx_cc < len(fila):
+					cc = fila[idx_cc]
+					ok, _ = validar_country_code_unico(cc)
+					if not ok:
+						es_valida = False
+
+				# -------- Incertidumbre --------
+				if es_valida and idx_inc is not None and idx_inc < len(fila):
+					inc = fila[idx_inc]
+					ok, _ = validar_incertidumbre_unica(inc)
+					if not ok:
+						es_valida = False
+
+				# -------- Escritura --------
+				if es_valida:
+					escritor.writerow(fila)
+
+	return "Dataset sanitizado"
