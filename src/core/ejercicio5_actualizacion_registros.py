@@ -372,3 +372,228 @@ def actualizar_multiples_campos(
     )
 
     return "Registro actualizado correctamente."
+
+# =========================================================
+# 5D - VALIDAR ACTUALIZACIONES
+# =========================================================
+
+def actualizar_registro_validado(
+    dataset: str,
+    identificador_columna: str,
+    identificador_valor: str,
+    columna_actualizar: str,
+    nuevo_valor: str
+):
+    """
+    Actualiza UN campo de un registro validando previamente
+    que el cambio no genere inconsistencias.
+
+    Si la validación falla:
+    - NO modifica el registro
+    - retorna los errores encontrados
+    """
+
+    ruta_origen, separador = obtener_ruta_y_separador(dataset)
+
+    if ruta_origen is None:
+        return False, "Dataset no reconocido."
+
+    columnas = columnas_dataset(dataset)
+
+    if isinstance(columnas, str):
+        return False, columnas
+
+    if columna_actualizar not in columnas:
+        return False, f"La columna '{columna_actualizar}' no existe."
+
+    carpeta_destino = (
+        Path(__file__).parent.parent
+        / "processed_datasets"
+        / dataset
+    )
+
+    carpeta_destino.mkdir(parents=True, exist_ok=True)
+
+    ruta_destino = (
+        carpeta_destino / f"{dataset}_processed.csv"
+    )
+
+    registros_actualizados = []
+    registro_encontrado = False
+
+    with open(ruta_origen, "r", encoding="utf-8") as archivo:
+        lector_csv = csv.DictReader(
+            archivo,
+            delimiter=separador
+        )
+
+        for registro in lector_csv:
+
+            coincide = (
+                registro.get(identificador_columna, "").strip()
+                == str(identificador_valor).strip()
+            )
+
+            if coincide:
+
+                copia_registro = registro.copy()
+
+                copia_registro[columna_actualizar] = str(nuevo_valor)
+
+                es_valido, errores = validar_registro(
+                    dataset,
+                    copia_registro
+                )
+
+                if not es_valido:
+                    return False, errores
+
+                registros_actualizados.append(copia_registro)
+
+                registro_encontrado = True
+
+            else:
+                registros_actualizados.append(registro)
+
+    if not registro_encontrado:
+        return False, (
+            f"No existe un registro con "
+            f"{identificador_columna} = "
+            f"'{identificador_valor}'."
+        )
+
+    with open(
+        ruta_destino,
+        "w",
+        encoding="utf-8",
+        newline=""
+    ) as archivo_salida:
+
+        escritor = csv.DictWriter(
+            archivo_salida,
+            fieldnames=columnas,
+            delimiter=separador
+        )
+
+        escritor.writeheader()
+        escritor.writerows(registros_actualizados)
+
+    return (
+        True,
+        f"Registro actualizado correctamente en "
+        f"'{ruta_destino.name}'."
+    )
+
+
+def actualizar_multiples_campos_validado(
+    dataset: str,
+    identificador_columna: str,
+    identificador_valor: str,
+    cambios: dict
+):
+    """
+    Actualiza múltiples campos de un registro validando
+    previamente que los nuevos valores sean correctos.
+
+    Si la validación falla:
+    - NO se aplica ningún cambio
+    - retorna la lista de errores
+    """
+
+    ruta_origen, separador = obtener_ruta_y_separador(dataset)
+
+    if ruta_origen is None:
+        return False, "Dataset no reconocido."
+
+    columnas = columnas_dataset(dataset)
+
+    if isinstance(columnas, str):
+        return False, columnas
+
+    for columna in cambios:
+        if columna not in columnas:
+            return (
+                False,
+                f"La columna '{columna}' no existe."
+            )
+
+    carpeta_destino = (
+        Path(__file__).parent.parent
+        / "processed_datasets"
+        / dataset
+    )
+
+    carpeta_destino.mkdir(parents=True, exist_ok=True)
+
+    ruta_destino = (
+        carpeta_destino / f"{dataset}_processed.csv"
+    )
+
+    registros_actualizados = []
+    registro_encontrado = False
+
+    with open(ruta_origen, "r", encoding="utf-8") as archivo:
+
+        lector_csv = csv.DictReader(
+            archivo,
+            delimiter=separador
+        )
+
+        for registro in lector_csv:
+
+            coincide = (
+                registro.get(identificador_columna, "").strip()
+                == str(identificador_valor).strip()
+            )
+
+            if coincide:
+
+                copia_registro = registro.copy()
+
+                for columna, nuevo_valor in cambios.items():
+                    copia_registro[columna] = str(nuevo_valor)
+
+                es_valido, errores = validar_registro(
+                    dataset,
+                    copia_registro
+                )
+
+                if not es_valido:
+                    return False, errores
+
+                registros_actualizados.append(copia_registro)
+
+                registro_encontrado = True
+
+            else:
+                registros_actualizados.append(registro)
+
+    if not registro_encontrado:
+        return (
+            False,
+            f"No existe un registro con "
+            f"{identificador_columna} = "
+            f"'{identificador_valor}'."
+        )
+
+    with open(
+        ruta_destino,
+        "w",
+        encoding="utf-8",
+        newline=""
+    ) as archivo_salida:
+
+        escritor = csv.DictWriter(
+            archivo_salida,
+            fieldnames=columnas,
+            delimiter=separador
+        )
+
+        escritor.writeheader()
+        escritor.writerows(registros_actualizados)
+
+    return (
+        True,
+        f"Registro actualizado correctamente en "
+        f"'{ruta_destino.name}'."
+    )
