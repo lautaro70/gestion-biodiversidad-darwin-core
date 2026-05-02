@@ -1,7 +1,6 @@
 from pathlib import Path
 import csv
 from datetime import datetime
-from iso3166 import countries
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import (
     columnas_dataset,
