@@ -79,3 +79,69 @@ def eliminar_por_lista_suministrada(dataset, lista_suministrada, columna_de_inte
 
 	return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
 
+#------6c------
+
+def eliminar_por_condicion(dataset, valor, columna_de_interes, operador):
+    """
+    Elimina registros que cumplen una condicion entre los elementos de una columna deseada y el valor designado
+    Si la condicion nunca se da, devuelve No se elimino ningun registro 
+    """
+    ruta, sep = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+
+    idx_interes = indices.get(columna_de_interes)
+    if idx_interes is None:
+        return 'No existe esa columna'
+
+    ruta_carpeta_procesada = obtener_ruta_processed(dataset)
+
+    eliminado = False
+    
+    try:
+        valor_procesado = float(valor)
+    except ValueError:
+        valor_procesado = valor
+
+    if operador not in ['>', '>=', '<', '<=', '==', '!=']:
+        return 'Operador no válido'
+
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
+
+            lector = csv.reader(archivo, delimiter=sep)
+            escritor = csv.writer(archivo_procesado, delimiter=sep)
+
+            header = next(lector)
+            escritor.writerow(header)
+
+            for fila in lector:
+                if idx_interes < len(fila):
+                    dato_string = fila[idx_interes].strip()
+
+                    try:
+                        dato = float(dato_string)
+                    except ValueError:
+                        dato = dato_string
+
+                    if operador == '>':
+                        condicion = dato > valor_procesado
+                    elif operador == '>=':
+                        condicion = dato >= valor_procesado
+                    elif operador == '<':
+                        condicion = dato < valor_procesado
+                    elif operador == '<=':
+                        condicion = dato <= valor_procesado
+                    elif operador == '==':
+                        condicion = dato == valor_procesado
+                    else:  # '!='
+                        condicion = dato != valor_procesado
+
+                    if condicion:
+                        eliminado = True
+                        continue
+
+                escritor.writerow(fila)
+
+    return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
+
+
