@@ -236,3 +236,40 @@ def sanitizar_dataset(dataset):
 					escritor.writerow(fila)
 
 	return "Dataset sanitizado"
+
+#Punto 6f
+def reporte_sanitizacion(dataset):
+    ruta_orig, sep = obtener_ruta_y_separador(dataset)
+    ruta_proc = obtener_ruta_processed(dataset)
+
+    with open(ruta_orig, 'r', encoding='utf-8') as f:
+        lector_orig = csv.reader(f, delimiter=sep)
+        next(lector_orig) #me corro del encabezado
+        total_orig = sum(1 for fila in lector_orig)
+
+    sanitizar_dataset(dataset) #Aca hacemos la sanitización del dataset donde crea el archico en la carpeta de procesados
+        
+    with open(ruta_proc, 'r', encoding='utf-8') as f:
+        lector_proc = csv.reader(f, delimiter=sep)
+        next(lector_proc)
+        total_proc = sum(1 for fila in lector_proc) #Obtenemos el total de procesados 
+
+    #Aca ya hacemos los calculos para obtener el total de eliminados y el porcentaje
+
+    eliminados = total_orig - total_proc
+    if total_orig > 0:
+        porcentaje = (eliminados * 100) / total_orig
+    else:
+        porcentaje = 0
+
+#Y aca informamos 
+    print("================================")
+    print("      REPORTE DEL PUNTO 6.F     ")
+    print("================================")
+    print(f"Registros iniciales: {total_orig}")
+    print(f"Registros eliminados: {eliminados}")
+    print(f"Registros finales:   {total_proc}")
+    print(f"Porcentaje eliminado: {porcentaje:.2f}%")
+    print("================================")
+        
+    return total_proc
