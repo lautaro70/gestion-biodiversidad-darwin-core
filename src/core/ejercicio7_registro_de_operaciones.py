@@ -39,3 +39,8 @@ def inicializar_log():
 #Lo que hicimos acá por ahora fue modificar las funciones de inserción (punto 4)
 
 #Para agregarlas al log.
+
+
+#7d-----
+
+#Exactamente lo mismo que el c, modificamos las funciones del 5 para agregarlas al log

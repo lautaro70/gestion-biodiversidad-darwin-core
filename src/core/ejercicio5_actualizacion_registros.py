@@ -9,6 +9,7 @@ from core.ejercicio2_lectura_dataset import (
 )
 
 from core.ejercicio4_insercion_registros import validar_registro
+from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
 
 
 # =========================================================
@@ -256,6 +257,9 @@ def actualizar_campo_registro(
         filas_actualizadas=filas_actualizadas
     )
 
+    mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}"
+    registrar_operacion_en_log(mensaje, "INFO")
+
     return "Registro actualizado correctamente."
 
 # =========================================================
@@ -371,6 +375,8 @@ def actualizar_multiples_campos(
         separador=separador,
         filas_actualizadas=filas_actualizadas
     )
+    mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}"
+    registrar_operacion_en_log(mensaje, "INFO")
 
     return "Registro actualizado correctamente."
 
@@ -592,6 +598,10 @@ def actualizar_multiples_campos_validado(
 
         escritor.writeheader()
         escritor.writerows(registros_actualizados)
+
+    
+    mensaje = f"Punto 7.D: Actualización múltiple de campos en {dataset}"
+    registrar_operacion_en_log(mensaje, "INFO")
 
     return (
         True,
