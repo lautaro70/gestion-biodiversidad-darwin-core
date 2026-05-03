@@ -81,7 +81,6 @@ def eliminar_por_lista_suministrada(dataset, lista_suministrada, columna_de_inte
 	return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
 
 #------6c------
-
 def eliminar_por_condicion(dataset, valor, columna_de_interes, operador):
     """
     Elimina registros que cumplen una condicion entre los elementos de una columna deseada y el valor designado
@@ -124,16 +123,24 @@ def eliminar_por_condicion(dataset, valor, columna_de_interes, operador):
                     except ValueError:
                         dato = dato_string
 
-                    if operador == '>':
+                    if type(dato) != type(valor_procesado):
+                        condicion = False
+
+                    elif operador == '>':
                         condicion = dato > valor_procesado
+
                     elif operador == '>=':
                         condicion = dato >= valor_procesado
+
                     elif operador == '<':
                         condicion = dato < valor_procesado
+
                     elif operador == '<=':
                         condicion = dato <= valor_procesado
+
                     elif operador == '==':
                         condicion = dato == valor_procesado
+
                     else:  # '!='
                         condicion = dato != valor_procesado
 
