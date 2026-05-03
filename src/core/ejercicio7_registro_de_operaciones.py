@@ -19,15 +19,20 @@ def obtener_fecha_hora_actual():
 def registrar_operacion_en_log(mensaje, tipo="INFO"):
     fecha_hora = obtener_fecha_hora_actual()
 
-    ruta_log = Path("logs") / "operations.log"
+    ruta_log = Path(__file__).parent.parent.parent / 'logs' / 'operations.log'
+
 #Aca armo la linea del cambio que se estaria realizando
-    linea = f"{fecha_hora} - {tipo} - {mensaje}\n"
+    linea = f"{fecha_hora} | {tipo} | {mensaje}\n"
 
     with open(ruta_log, "a", encoding="utf-8") as archivo:
         archivo.write(linea)
         #Y aca simplemente ponemos la linea del cambio en el archivo
 
-
+def inicializar_log():
+    ruta_log = Path(__file__).parent.parent.parent / 'logs' / 'operations.log'
+    if not ruta_log.exists():
+        with open(ruta_log, "w", encoding="utf-8") as f:
+            f.write("Fecha_Hora | Nivel | Detalles\n")
 #-------Punto c
 
 
