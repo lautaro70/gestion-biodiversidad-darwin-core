@@ -6,6 +6,7 @@ from core.ejercicio2_lectura_dataset import (
     columnas_dataset,
     contar_registros
 )
+from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
 
 #------4a------
 
@@ -173,6 +174,9 @@ def insertar_registro_teclado(dataset):
             for fila in csv.reader(f_orig, delimiter=sep): escritor.writerow(fila)
             escritor.writerow(nueva_fila)
             
+    mensaje = f"Punto 7.C: Inserción manual de 1 registro en {dataset}"
+    registrar_operacion_en_log(mensaje, "INFO")  #Aca seria el punto 7c donde registramos en el log
+            
     return "Registro único guardado."
 
 #------4g (Extendiendo la lógica del 4)f)) ------
@@ -209,5 +213,10 @@ def insertar_multiples_registros(dataset):
             escritor = csv.writer(f_dest, delimiter=sep)
             for fila in csv.reader(f_orig, delimiter=sep): escritor.writerow(fila)
             escritor.writerows(nuevas_filas)
+
+#----------Punto 7c
+    cantidad = len(nuevas_filas)
+    mensaje = f"Punto 7.C: Inserción masiva de {cantidad} registros en {dataset}"
+    registrar_operacion_en_log(mensaje, "INFO")
 
     return f"{len(nuevas_filas)} registros guardados."

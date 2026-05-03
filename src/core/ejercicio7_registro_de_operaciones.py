@@ -5,7 +5,7 @@ import csv
 
 
 
-#Punto B
+#Punto A
 
 def obtener_fecha_hora_actual():
     ahora = datetime.now()
@@ -14,7 +14,7 @@ def obtener_fecha_hora_actual():
 
 
 
-#Punto A
+#Punto B
 
 def registrar_operacion_en_log(mensaje, tipo="INFO"):
     fecha_hora = obtener_fecha_hora_actual()
@@ -26,3 +26,11 @@ def registrar_operacion_en_log(mensaje, tipo="INFO"):
     with open(ruta_log, "a", encoding="utf-8") as archivo:
         archivo.write(linea)
         #Y aca simplemente ponemos la linea del cambio en el archivo
+
+
+#-------Punto c
+
+
+#Lo que hicimos acá por ahora fue modificar las funciones de inserción (punto 4)
+
+#Para agregarlas al log.
