@@ -17,7 +17,7 @@ def eliminar_por_id(dataset, id_buscado):
 	ruta, sep = obtener_ruta_y_separador(dataset)
 	indices = obtener_indices_columnas(dataset)
 
-	idx_id = indices.get('occurrenceID') or indices.get('gbifID')
+	idx_id = indices.get('occurrenceID') 
 	
 	if idx_id is None:
 		return 'No existe columna ID válida'
