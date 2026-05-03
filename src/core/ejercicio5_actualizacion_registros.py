@@ -22,10 +22,11 @@ def obtener_ruta_processed(dataset: str) -> Path:
     """
 
     carpeta_destino = (
-        Path(__file__).parent.parent /
-        "processed_datasets" /
-        dataset
+    Path(__file__).parent.parent.parent /
+    "processed_datasets" /
+    dataset
     )
+
 
     carpeta_destino.mkdir(parents=True, exist_ok=True)
 

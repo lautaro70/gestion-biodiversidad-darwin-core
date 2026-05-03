@@ -150,7 +150,7 @@ def insertar_registro_teclado(dataset):
     if not ruta_orig: return "Dataset no reconocido."
 
     # Definimos rutas
-    carpeta_dest = Path(__file__).parent.parent / 'processed_datasets' / dataset
+    carpeta_dest = Path(__file__).parent.parent.parent / 'processed_datasets' / dataset
     # exist_ok=True evita que el programa explote si la carpeta ya está creada
     #.mkdir Creá una nueva carpeta en la ruta que guardé en la variable carpeta_dest, parents=true crea al padre si no existe
     carpeta_dest.mkdir(parents=True, exist_ok=True)
@@ -185,7 +185,7 @@ def insertar_multiples_registros(dataset):
     ruta_orig, sep = obtener_ruta_y_separador(dataset)
     if not ruta_orig: return "Dataset no reconocido."
 
-    carpeta_dest = Path(__file__).parent.parent / 'processed_datasets' / dataset
+    carpeta_dest = Path(__file__).parent.parent.parent / 'processed_datasets' / dataset
     carpeta_dest.mkdir(parents=True, exist_ok=True)
     ruta_dest = carpeta_dest / f"{dataset}_processed.csv"
 
