@@ -10,7 +10,6 @@ Este proyecto es una herramienta diseñada para la gestión, validación y explo
 * **Suarez Franco**
 
 ## Configuración del Entorno
-
 Para asegurar que el software funcione correctamente en Windows, Linux o Mac, siga estos pasos para configurar el entorno virtual e instalar las dependencias.
 
 ### Requisitos del Sistema
@@ -18,6 +17,18 @@ Para asegurar la compatibilidad, este proyecto fue desarrollado y testeado bajo 
 * **Python**: 3.13.12
 * **Streamlit**: 1.57.0
 * **Jupyter**: para la ejecución de los notebooks en 'src/notebooks/'.
+
+### Preparación de los Datos
+Para que el procesamiento de los Notebooks y la aplicación funcionen correctamente, debe preparar los archivos de datos siguiendo estos pasos:
+
+1. **Ubicación**: Coloque los datasets originales dentro de la carpeta `raw_datasets/`.
+2. **Descompresión**: Si los archivos se encuentran en formato `.zip`, descomprímalos en dicha carpeta.
+3. **Renombrado y Estructura**: Para que las rutas del sistema localicen los datos, las carpetas dentro de `raw_datasets/` deben mantener la siguiente estructura y nombres exactos (respetando mayúsculas):
+    * **IADIZA**: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/` (Debe contener `occurrence.txt`).
+   * **iNaturalist**: `raw_datasets/Inaturalist/Inaturalist/` (Debe contener `observations.csv`).
+   * **Xeno-Canto**: `raw_datasets/XenoCanto/XenoCanto/` (Debe contener `Occurrence.txt` -> *la O mayúscula).
+
+*Nota: Se recomienda verificar que los nombres de los archivos internos coincidan exactamente con los mencionados, ya que el sistema es sensible a mayúsculas y minúsculas (Case Sensitive).*
 
 ### Creación del entorno virtual (Virtualenv)
 Desde la carpeta raíz del proyecto (`code/`), ejecute:

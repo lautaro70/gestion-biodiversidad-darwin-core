@@ -16,7 +16,7 @@ DATASETS = {
     },
 
     "XenoCanto": {
-        "path": BASE_DIR / "raw_datasets" / "XenoCanto" / "XenoCanto" / "occurrence.txt",
+        "path": BASE_DIR / "raw_datasets" / "XenoCanto" / "XenoCanto" / "Occurrence.txt",
         "separator": ","
     }
 }
