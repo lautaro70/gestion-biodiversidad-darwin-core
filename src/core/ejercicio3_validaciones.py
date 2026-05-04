@@ -57,27 +57,33 @@ def validar_par_coordenadas(lat_valor, lon_valor):
     Valida un par de coordenadas juntas.
     Devuelve: (bool, lista_de_errores)
     """
-    errores = []
-    
-    valida_lat, error_lat = validar_latitud(lat_valor)
-    if not valida_lat:
-        errores.append(error_lat)
-    
-    valida_lon, error_lon = validar_longitud(lon_valor)
-    if not valida_lon:
-        errores.append(error_lon)
-    
-    # Caso especial: una completa y la otra vacía (punto 3B)
     lat_vacia = lat_valor is None or str(lat_valor).strip() == ""
     lon_vacia = lon_valor is None or str(lon_valor).strip() == ""
-    
-    if (not lat_vacia and lon_vacia):
-        errores.append("Tiene latitud pero falta longitud")
-    elif (lat_vacia and not lon_vacia):
-        errores.append("Tiene longitud pero falta latitud")
-    
-    return len(errores) == 0, errores
 
+    # si ambas estan vacías es válido
+    if lat_vacia and lon_vacia:
+        return True, []
+
+    errores = []
+
+    # Validar solo si hay valor
+    if not lat_vacia:
+        valida_lat, error_lat = validar_latitud(lat_valor)
+        if not valida_lat:
+            errores.append(error_lat)
+
+    if not lon_vacia:
+        valida_lon, error_lon = validar_longitud(lon_valor)
+        if not valida_lon:
+            errores.append(error_lon)
+
+    # Caso inconsistente donde hau una vacia y la otra no
+    if not lat_vacia and lon_vacia:
+        errores.append("Tiene latitud pero falta longitud")
+    elif lat_vacia and not lon_vacia:
+        errores.append("Tiene longitud pero falta latitud")
+
+    return len(errores) == 0, errores
 
 def validar_fecha_unica(fecha_str, formatos=None):
     """
@@ -197,6 +203,9 @@ def validar_coordenadas_incompletas(dataset):
     idx_lat = indices.get('decimalLatitude')
     idx_lon = indices.get('decimalLongitude')
     
+    if idx_lat is None or idx_lon is None:
+        return 0, [f"No se encontraron columnas de coordenadas en {dataset}"]
+
     incompletos = []
 
     with open(ruta, 'r', encoding='utf-8') as archivo:
