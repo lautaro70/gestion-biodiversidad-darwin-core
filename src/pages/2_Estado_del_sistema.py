@@ -1,21 +1,13 @@
 import streamlit as st
-import csv 
-import os
+from common.dataset_utils import leer_logs
 
 st.set_page_config(page_title="Estado del sistema")
 st.title("Estado del sistema")
 st.write("los logs se mostraran a continuación")
 
-ruta_actual = os.path.dirname(os.path.abspath(__file__))
-ruta_log = os.path.join(ruta_actual, "..", "..", "logs", "operations.log")
-
 try:
     # Intentamos abrir y leer el archivo directamente
-    with open(ruta_log, mode='r', encoding='utf-8') as archivo:
-        lector = csv.reader(archivo)
-        #Lo dejamos en lista asi crea una unica tabla
-        datos_log = list(lector)
-        
+    datos_log = leer_logs()
     # Si lo pudimos leer, verificamos que no esté vacío para mostrarlo
     if len(datos_log) > 0:
         st.dataframe(datos_log)
