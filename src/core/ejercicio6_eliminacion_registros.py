@@ -217,12 +217,17 @@ def sanitizar_dataset(dataset):
 						es_valida = False
 
 				# -------- Fecha --------
-				if es_valida and idx_fecha is not None and idx_fecha < len(fila):
-					fecha = fila[idx_fecha]
-					if fecha:
-						ok, _ = validar_fecha_unica(fecha)
-						if not ok:
-							es_valida = False
+				columnas_fecha = ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified']
+
+				for columna in columnas_fecha:
+					idx_fecha = indices.get(columna)
+					if es_valida and idx_fecha is not None and idx_fecha < len(fila):
+						fecha = fila[idx_fecha]
+
+						if fecha and str(fecha).strip():
+							ok, _ = validar_fecha_unica(fecha)
+							if not ok:
+								es_valida = False
 
 				# -------- Country code --------
 				if es_valida and idx_cc is not None and idx_cc < len(fila):
