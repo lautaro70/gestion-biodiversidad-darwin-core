@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from pathlib import Path
 
@@ -37,15 +36,81 @@ def inicializar_log() -> None:
     if not ruta_log.exists():
         with open(ruta_log, "w", encoding="utf-8") as f:
             f.write("Fecha_Hora | Nivel | Detalles\n")
-#-------Punto c
+
+#-------Punto 7c
+
+# En este punto se modificaron las funciones
+# del ejercicio 4 (Inserción de registros)
+# para integrar el sistema de logs.
+
+# Se registran automáticamente:
+#
+# - inserciones individuales exitosas
+# - inserciones masivas
+# - cantidad de registros insertados
+# - errores de validación
+# - errores por datasets inexistentes
+# - operaciones canceladas
+#
+# Todas las operaciones quedan almacenadas
+# dentro de operations.log.
 
 
-#Lo que hicimos acá por ahora fue modificar las funciones de inserción (punto 4)
-#Para agregarlas al log.
+#------7d-----
+
+# En este punto se modificaron las funciones
+# del ejercicio 5 (Actualización de registros)
+# para agregar registros automáticos en el log.
+
+# Se registran:
+#
+# - actualizaciones simples
+# - actualizaciones múltiples
+# - cantidad de registros afectados
+# - errores de columnas inexistentes
+# - errores de IDs inválidos
+# - fallos de validación
+#
+# Cada operación UPDATE queda registrada
+# en operations.log con su tipo correspondiente.
 
 
-#7d-----
+#------7e-----
 
-#Modificación del punto 5 
+# En este punto se integró el sistema de logs
+# con las funciones del ejercicio 6
+# (Eliminación y sanitización de registros).
 
-#-------7e modificacion del punto 6
+# Se registran:
+#
+# - eliminaciones por ID
+# - eliminaciones por listas
+# - eliminaciones por condición
+# - sanitización automática de datasets
+# - generación de reportes
+# - cantidad de registros eliminados
+#
+# También se registran operaciones
+# sin coincidencias encontradas.
+
+
+#------7f-----
+
+# En este punto se implementó el registro
+# automático de errores del sistema.
+
+# Se utiliza el tipo:
+# ERROR
+
+# Algunos errores registrados:
+#
+# - datasets inexistentes
+# - columnas inválidas
+# - IDs inexistentes
+# - operadores inválidos
+# - errores de validación
+# - registros inconsistentes
+# - operaciones canceladas
+#
+# Esto permite mantener trazabilidad
+# completa de fallos y facilita el debugging.
