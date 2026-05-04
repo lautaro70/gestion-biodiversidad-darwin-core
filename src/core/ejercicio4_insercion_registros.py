@@ -405,7 +405,7 @@ def insertar_multiples_registros(dataset: str) -> str:
             break
 
     if not nuevas_filas:
-        # PUNTO 7.F: Si se sale del bucle sin ningún registro válido[cite: 1]
+        # PUNTO 7.F: Si se sale del bucle sin ningún registro válido
         registrar_operacion_en_log(f"Punto 7.F: Operación masiva en {dataset} cancelada por falta de datos válidos.", "ERROR")
         return "Operación cancelada."
 
