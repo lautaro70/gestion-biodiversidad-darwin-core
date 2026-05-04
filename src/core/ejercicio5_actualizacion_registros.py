@@ -257,10 +257,12 @@ def actualizar_campo_registro(
         filas_actualizadas=filas_actualizadas
     )
 
-    mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}"
+    
+    cantidad_afectados = 1 if registro_encontrado else 0
+    mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}. Afectados: {cantidad_afectados}"
     registrar_operacion_en_log(mensaje, "INFO")
 
-    return "Registro actualizado correctamente."
+    return "Registro actualizado correctamente.Total de afectados: {cantidad_afectados}"
 
 # =========================================================
 # 5C - ACTUALIZAR MÚLTIPLES CAMPOS
@@ -375,10 +377,12 @@ def actualizar_multiples_campos(
         separador=separador,
         filas_actualizadas=filas_actualizadas
     )
-    mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}"
+
+    cantidad_afectados = 1 if registro_encontrado else 0
+    mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}. Afectados: {cantidad_afectados}"
     registrar_operacion_en_log(mensaje, "INFO")
 
-    return "Registro actualizado correctamente."
+    return "Registro actualizado correctamente.Total de afectados: {cantidad_afectados}"
 
 # =========================================================
 # 5D - VALIDAR ACTUALIZACIONES

@@ -41,10 +41,11 @@ def inicializar_log() -> None:
 
 
 #Lo que hicimos acá por ahora fue modificar las funciones de inserción (punto 4)
-
 #Para agregarlas al log.
 
 
 #7d-----
 
-#Exactamente lo mismo que el c, modificamos las funciones del 5 para agregarlas al log
+#Modificación del punto 5 
+
+#-------7e modificacion del punto 6

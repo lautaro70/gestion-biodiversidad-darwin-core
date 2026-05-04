@@ -8,83 +8,104 @@ from core.ejercicio3_validaciones import (
     validar_par_coordenadas,
     validar_fecha_unica
 )
+from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
 
 #------6a------
 def eliminar_por_id(dataset: str, id_buscado: str) -> str:
-	"""
+    """
     Elimina el registro cuyo occurrenceID coincida con el id buscado.
     Genera un nuevo archivo en processed_datasets sin el registro eliminado.
     Si el id no existe, informa el error.
     Devuelve: mensaje indicando el resultado de la operación.
     """
 
-	ruta, separador = obtener_ruta_y_separador(dataset)
-	indices = obtener_indices_columnas(dataset)
+    ruta, separador = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
 
-	indice_id = indices.get('occurrenceID') 
-	
-	if indice_id is None:
-		return 'No existe columna ID válida'
+    indice_id = indices.get('occurrenceID') 
+    
+    if indice_id is None:
+        return 'No existe columna ID válida'
 
-	ruta_carpeta_procesada = obtener_ruta_processed(dataset)
+    ruta_carpeta_procesada = obtener_ruta_processed(dataset)
 
-	eliminado = False
+    eliminado = False
 
-	with open(ruta, 'r', encoding='utf-8') as archivo:
-		with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
-			lector = csv.reader(archivo, delimiter=separador)
-			escritor = csv.writer(archivo_procesado, delimiter=separador)
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
+            lector = csv.reader(archivo, delimiter=separador)
+            escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-			encabezado = next(lector)
-			escritor.writerow(encabezado)
+            encabezado = next(lector)
+            escritor.writerow(encabezado)
 
-			for fila in lector:
-				if indice_id < len(fila) and str(fila[indice_id]).strip() == str(id_buscado).strip():
-					eliminado = True
-					continue  # Saltea para no cargar la fila si el id buscado es igual al id de algun registro del dataset
-				escritor.writerow(fila)
+            for fila in lector:
+                if indice_id < len(fila) and str(fila[indice_id]).strip() == str(id_buscado).strip():
+                    eliminado = True
+                    continue  # Saltea para no cargar la fila si el id buscado es igual al id de algun registro del dataset
+                escritor.writerow(fila)
 
-	return 'Registro eliminado' if eliminado else 'No se encontró el ID'
+    # --- PUNTO 7e (Alineado con el bloque with)
+    cantidad_eliminados = 1 if eliminado else 0
+    
+    # Mensaje para el log
+    mensaje_log = f"Punto 7.E: Eliminación en {dataset}. Registros eliminados: {cantidad_eliminados}"
+    registrar_operacion_en_log(mensaje_log, "WARNING")
 
+    # Retornamos el mensaje indicando la cantidad (Punto 7.E)
+    if eliminado:
+        return f"Registro eliminado. Total de afectados: {cantidad_eliminados}"
+    else:
+        return f"No se encontró el ID. Total de afectados: {cantidad_eliminados}"
+    
 
-#------6b------ 
+	#---------6b
 def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str], columna_de_interes: str) -> str:
-	"""
+    """
     Elimina los registros cuyos valores en la columna indicada coincidan
     con alguno de los elementos de la lista suministrada.
     Genera un nuevo archivo en processed_datasets con los registros restantes.
     Devuelve: mensaje indicando el resultado de la operación.
     """
-	ruta, separador = obtener_ruta_y_separador(dataset)
-	indices = obtener_indices_columnas(dataset)
-	
-	indice_columna = indices.get(columna_de_interes)
+    ruta, separador = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
+    
+    indice_columna = indices.get(columna_de_interes)
 
-	if indice_columna is None:
-		return 'No existe esa columna'
+    if indice_columna is None:
+        return 'No existe esa columna'
 
-	lista_suministrada = [elemento.strip() for elemento in lista_suministrada]
+    lista_suministrada = [elemento.strip() for elemento in lista_suministrada]
+    ruta_carpeta_procesada = obtener_ruta_processed(dataset)
 
-	ruta_carpeta_procesada = obtener_ruta_processed(dataset)
+    # Cambiamos el booleano por un contador para cumplir mejor el Punto 7.E
+    cantidad_eliminados = 0
 
-	eliminado = False
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
+            lector = csv.reader(archivo, delimiter=separador)
+            escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-	with open(ruta, 'r', encoding='utf-8') as archivo:
-		with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
-			lector = csv.reader(archivo, delimiter=separador)
-			escritor = csv.writer(archivo_procesado, delimiter=separador)
+            encabezado = next(lector)
+            escritor.writerow(encabezado)
 
-			encabezado = next(lector)
-			escritor.writerow(encabezado)
+            for fila in lector:
+                if indice_columna < len(fila) and fila[indice_columna].strip() in lista_suministrada:
+                    cantidad_eliminados += 1 # Contamos cada eliminación
+                    continue  # Saltea si esta en la lista
+                escritor.writerow(fila)
+    
+    # --- PUNTO 7e
+    
+    # Mensaje para el log
+    mensaje_log = f"Punto 7.E: Eliminación por lista en {dataset}. Registros eliminados: {cantidad_eliminados}"
+    registrar_operacion_en_log(mensaje_log, "WARNING")
 
-			for fila in lector:
-				if indice_columna < len(fila) and fila[indice_columna].strip() in lista_suministrada:
-					eliminado = True
-					continue  # Saltea si esta en la lista
-				escritor.writerow(fila)
-
-	return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
-
+    # Retornamos el mensaje indicando la cantidad (Punto 7.E)
+    if cantidad_eliminados > 0:
+        return f"Proceso completado. Total de eliminados: {cantidad_eliminados}"
+    else:
+        return f"No se encontraron coincidencias. Total de afectados: {cantidad_eliminados}"
 
 #------6c------
 def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, operador: str) -> str:
@@ -103,7 +124,8 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
 
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
 
-    eliminado = False
+    #----------- Contador para Punto 7e
+    cantidad_eliminados = 0
     
     try:
         valor_procesado = float(valor)
@@ -133,33 +155,35 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
 
                     if type(dato) != type(valor_procesado):
                         condicion = False
-
                     elif operador == '>':
                         condicion = dato > valor_procesado
-
                     elif operador == '>=':
                         condicion = dato >= valor_procesado
-
                     elif operador == '<':
                         condicion = dato < valor_procesado
-
                     elif operador == '<=':
                         condicion = dato <= valor_procesado
-
                     elif operador == '==':
                         condicion = dato == valor_procesado
-
                     else:  # '!='
                         condicion = dato != valor_procesado
 
                     if condicion:
-                        eliminado = True
+                        cantidad_eliminados += 1 # Sumamos cada registro que se saltea (elimina)
                         continue
 
                 escritor.writerow(fila)
 
-    return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
+    # ---7eee
+    # Registro en el archivo log con la cantidad de afectados
+    mensaje_log = f"Punto 7.E: Eliminación por condición en {dataset}. Registros eliminados: {cantidad_eliminados}"
+    registrar_operacion_en_log(mensaje_log, "WARNING")
 
+    # Retorno con la cantidad (indicar cantidad de registros afectados)
+    if cantidad_eliminados > 0:
+        return f"Registros eliminados correctamente. Total de afectados: {cantidad_eliminados}"
+    else:
+        return f"No se eliminó ningún registro. Total de afectados: 0"
 
 #------6e------
 
