@@ -1,9 +1,14 @@
 import csv
+from typing import Optional, Union
 
 from common.dataset_utils import obtener_ruta_y_separador
 
-def mostrar_primeras_filas(dataset):
-    """Abre el archivo principal y muestra las primeras 10 filas."""
+def mostrar_primeras_filas(dataset: str) -> Optional[str]:
+    """
+    Abre el archivo principal del dataset y muestra las primeras 10 filas.
+    Imprime los primeros 5 encabezados como referencia.
+    Devuelve un mensaje de error si el dataset no es reconocido.
+    """
     ruta, sep = obtener_ruta_y_separador(dataset)
     
     if ruta is None:
@@ -22,9 +27,12 @@ def mostrar_primeras_filas(dataset):
                 break
 
 # INICIO DEL INCISO 2b 
-#Hacer una funcion con las columnas de los datasets
 
-def columnas_dataset(dataset): 
+def columnas_dataset(dataset: str) -> Union[list[str], str]:
+    """
+    Retorna la lista completa de nombres de columnas del dataset.
+    Devuelve un mensaje de error si el dataset no es reconocido.
+    """
     ruta, sep = obtener_ruta_y_separador(dataset) 
     if ruta is None:  
         return f"Dataset '{dataset}' no reconocido."
@@ -47,9 +55,11 @@ def obtener_indices_columnas(dataset):
     return indices	
 
 #INCISO 2d
-def contar_registros(dataset):
+def contar_registros(dataset: str) -> Union[int, str]:
     """Retorna la cantidad total de registros (filas de datos) del dataset,
-    sin contar el encabezado."""
+    sin contar el encabezado.
+    Devuelve un mensaje de error si el dataset no es reconocido.
+    """
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None: 
         return f"Dataset '{dataset}' no reconocido."
@@ -63,9 +73,11 @@ def contar_registros(dataset):
     return cantidad 
 
 #INCISO 2e
-def columnas_con_nulos(dataset):
+def columnas_con_nulos(dataset: str) -> Union[list[str], str]:
     """Retorna una lista con los nombres de las columnas que tienen 
-    al menos un registro nulo, reutilizando la función del Punto 2.C."""
+    al menos un registro nulo, reutilizando la función del Punto 2.C.
+    Devuelve un mensaje de error si el dataset no es reconocido.
+    """
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None: 
         return f"Dataset '{dataset}' no reconocido."
@@ -86,8 +98,12 @@ def columnas_con_nulos(dataset):
         return list(columnas_vacias)
 
 #INCISO 2f
-def porcentaje_nulos(dataset):
-    """Retorna el porcentaje de valores nulos por columna"""
+def porcentaje_nulos(dataset: str) -> Union[dict[str, float], str]:
+    """
+    Retorna el porcentaje de valores nulos por columna como un diccionario
+    {nombre_columna: porcentaje}.
+    Devuelve un mensaje de error si el dataset no es reconocido.
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None:
@@ -122,8 +138,11 @@ def porcentaje_nulos(dataset):
     }
  
 #Inciso 2g 
-def valores_distintos(dataset, columna):
-    """Retorna la cantidad de valores distintos de una columna"""
+def valores_distintos(dataset: str, columna: str) -> Union[int, str]:
+    """
+    Retorna la cantidad de valores distintos (no vacíos) de una columna.
+    Devuelve un mensaje de error si el dataset o la columna no existen.
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None:
@@ -154,8 +173,12 @@ def valores_distintos(dataset, columna):
     return len(valores)
  
 #Inciso 2h
-def frecuencia_valores(dataset, columna):
-    """Retorna la frecuencia de aparición de cada valor en una columna"""
+def frecuencia_valores(dataset: str, columna: str) -> Union[dict[str, int], str]:
+    """
+    Retorna la frecuencia de aparición de cada valor (no vacío) en una columna,
+    como un diccionario {valor: cantidad}.
+    Devuelve un mensaje de error si el dataset o la columna no existen.
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None:
@@ -189,10 +212,14 @@ def frecuencia_valores(dataset, columna):
     return frecuencia
 
 #Inciso 2i
-def analisis_columna(dataset, columna, tipo):
-    """numeric: min, max, promedio
-       coordinate: min, max
-       text: longitud mínima y máxima"""
+def analisis_columna(dataset: str, columna: str, tipo: str) -> Union[dict, str]:
+    """
+    Retorna estadísticas de una columna según su tipo:
+    - 'numeric': min, max, promedio.
+    - 'coordinate': min, max.
+    - 'text': longitud mínima y máxima de los valores.
+    Devuelve un mensaje de error si el dataset, la columna o el tipo no son válidos.
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None:
@@ -259,8 +286,12 @@ def analisis_columna(dataset, columna, tipo):
         return "Tipo no válido"
 
 #Inciso 2j
-def columnas_totalmente_nulas(dataset):
-    """Retorna las columnas cuyos valores son nulos en todos los registros"""
+def columnas_totalmente_nulas(dataset: str) -> Union[list[str], str]:
+    """
+    Retorna la lista de columnas cuyos valores son nulos en absolutamente
+    todos los registros del dataset.
+    Devuelve un mensaje de error si el dataset no es reconocido.
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     if ruta is None:

@@ -1,6 +1,7 @@
 from pathlib import Path
 import csv
 from datetime import datetime
+from typing import Optional
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import obtener_indices_columnas, contar_registros
 from common.constants import country_codes_validos
@@ -8,7 +9,7 @@ from common.constants import country_codes_validos
 
 # FUNCIONES BASE DE VALIDACIÓN
 
-def validar_latitud(valor):
+def validar_latitud(valor: Optional[str]) -> tuple[bool, str]:
     """
     Valida una latitud individual.
     Recibe: un string o número.
@@ -31,9 +32,10 @@ def validar_latitud(valor):
         return False, f"Latitud {lat} fuera de rango [-90, 90]"
 
 
-def validar_longitud(valor):
+def validar_longitud(valor Optional[str]) -> tuple[bool, str]:
     """
     Valida una longitud individual.
+    Recibe: un string o número.
     Devuelve: (bool, str) -> (es_valida, mensaje_error)
     """
     if valor is None or str(valor).strip() == "":
@@ -52,7 +54,7 @@ def validar_longitud(valor):
         return False, f"Longitud {lon} fuera de rango [-180, 180]"
 
 
-def validar_par_coordenadas(lat_valor, lon_valor):
+def validar_par_coordenadas (lat_valor: Optional[str], lon_valor: Optional[str]) -> tuple[bool, list[str]]:
     """
     Valida un par de coordenadas juntas.
     Devuelve: (bool, lista_de_errores)
@@ -79,7 +81,7 @@ def validar_par_coordenadas(lat_valor, lon_valor):
     return len(errores) == 0, errores
 
 
-def validar_fecha_unica(fecha_str, formatos=None):
+def validar_fecha_unica(fecha_str: Optional[str], formatos: Optional[list[str]] = None) -> tuple[bool, str]:
     """
     Valida una fecha en una lista de formatos.
     Devuelve: (bool, str) -> (es_valida, mensaje_error)
@@ -113,10 +115,10 @@ def validar_fecha_unica(fecha_str, formatos=None):
     return False, f"Formato de fecha inválido: '{txt}'"
 
 
-def validar_country_code_unico(codigo):
+def validar_country_code_unico(codigo: Optional[str]) -> tuple[bool, str]:
     """
-    Valida un countryCode individual.
-    Devuelve: (bool, str)
+    Valida un countryCode individual.contra el estándar ISO 3166-1 alpha-2.
+    Devuelve: (bool, str) -> (es_valido, mensaje_error)
     """
     if codigo is None or str(codigo).strip() == "":
         return True, ""
@@ -129,10 +131,11 @@ def validar_country_code_unico(codigo):
     return False, f"countryCode inválido: '{codigo}'"
 
 
-def validar_incertidumbre_unica(valor):
+def validar_incertidumbre_unica(valor: Optional[str]) -> tuple[bool, str]:
     """
     Valida coordinateUncertaintyInMeters individual.
-    Devuelve: (bool, str)
+    El valor debe ser numérico, no negativo y no mayor a 100 metros.
+    Devuelve: (bool, str) -> (es_valido, mensaje_error)
     """
     if valor is None or str(valor).strip() == "":
         return True, ""  # Vacío se considera válido
@@ -149,9 +152,8 @@ def validar_incertidumbre_unica(valor):
     except ValueError:
         return False, f"Incertidumbre no es número: '{txt}'"
 
-#Arranco con el 3a
 
-def validar_coordenadas_rango(dataset):
+def validar_coordenadas_rango(dataset: str) -> tuple[int, list[str]]:
     """
     Detecta registros con coordenadas inválidas (fuera de rango o no numéricas).
     Reutiliza validar_par_coordenadas()
@@ -189,7 +191,14 @@ def validar_coordenadas_rango(dataset):
 
 #----3b----
 
-def validar_coordenadas_incompletas(dataset):
+def validar_coordenadas_incompletas(dataset: str) -> tuple[int, list[str]]:
+    """
+    Detecta registros con coordenadas incompletas:
+    - Tiene latitud pero no longitud.
+    - Tiene longitud pero no latitud.
+    - No tiene ninguna de las dos.
+    Devuelve: (cantidad, lista_de_errores)
+    """
 
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
@@ -227,7 +236,7 @@ def validar_coordenadas_incompletas(dataset):
 
 
 #------ 3c ------
-def verificar_fechas(dataset):
+def verificar_fechas(dataset: str) -> tuple[int, list[str]]:
     """
     Revisa que las fechas de los datasets sean válidas. 
     Se consideran válidas a las fechas que tengan el formato adecuado y no sean mayores al año actual
@@ -268,9 +277,14 @@ def verificar_fechas(dataset):
                     errores.append(f"Fila {nro_fila} columna '{columna}': {error_msg}")
     
     return len(errores), errores
+
 #-------3d ------
 
-def detectar_duplicados(dataset):
+def detectar_duplicados(dataset: str) -> tuple[int, list[str]]:
+    """
+    Detecta registros duplicados usando el campo occurrenceID o id.
+    Devuelve: (cantidad_duplicados, lista_de_ids_repetidos)
+    """  
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
 #Agarramos la columna id
@@ -301,7 +315,7 @@ def detectar_duplicados(dataset):
     return len(duplicados), duplicados #devolvemos la lista con la cantidad de duplicados
 
 #----------3e----------
-def Detectar_invalidos_countryCode(dataset):
+def Detectar_invalidos_countryCode(dataset: str) -> tuple[int, list[str]]:
     """
     Detecta countryCodes inválidos.
     Utiliza validar_country_code_unico()
@@ -335,7 +349,7 @@ def Detectar_invalidos_countryCode(dataset):
     return len(errores), errores
 
 #----------3f----------
-def validar_incertidumbre(dataset):
+def validar_incertidumbre(dataset: str) -> tuple[int, list[str]]:
     """
     Detecta registros donde la incertidumbre (coordinateUncertaintyInMeters):
     - No sea numérica.
@@ -370,9 +384,11 @@ def validar_incertidumbre(dataset):
     return len(errores), errores
 
 #----------3g----------
-def registros_taxonomia_incompleta(dataset):
+def registros_taxonomia_incompleta(dataset: str) -> int:
     """Función auxiliar para el 3G. Cuenta cuántos registros tienen
-    campos taxonómicos básicos vacíos."""
+    campos taxonómicos básicos vacíos (kingdom, phylum, class, order, family, genus, species).
+    Devuelve: cantidad de registros con taxonomía incompleta.
+    """
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
     
@@ -404,10 +420,10 @@ def registros_taxonomia_incompleta(dataset):
                 
     return incompletos
 
-def generar_resumen_calidad(dataset):
+def generar_resumen_calidad(dataset: str) -> tuple[Optional[dict], str]:
     """
     Punto 3.G: Genera un resumen de calidad agrupando todas las métricas.
-    Retorna un diccionario y un texto formateado.
+    Retorna un diccionario con las métricas y un texto formateado del reporte.
     """
     indices = obtener_indices_columnas(dataset)
     if isinstance(indices, str):
@@ -446,9 +462,12 @@ LAT_MIN_SA = -60.0
 LON_MAX_SA = -30.0
 LON_MIN_SA = -90.0
 
-def validar_coordenadas_sudamerica(dataset):
-    """Verifica que las coordenadas caigan dentro del territorio de América del Sur.
-    Retorna la cantidad y el detalle de los registros que caen fuera."""
+def validar_coordenadas_sudamerica(dataset: str) -> tuple[int, list[str]]:
+    """
+    Verifica que las coordenadas caigan dentro del territorio de América del Sur.
+    Utiliza las constantes LAT_MIN_SA, LAT_MAX_SA, LON_MIN_SA, LON_MAX_SA.
+    Retorna la cantidad y el detalle de los registros que caen fuera.
+    """
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
     
@@ -492,8 +511,19 @@ def validar_coordenadas_sudamerica(dataset):
     return len(errores), errores
 
 #----------3i----------
-def auditar_coordenada_generica(dataset, nombre_columna, min_glob, max_glob, min_sa, max_sa):
-    """Función base REUTILIZABLE para auditar cualquier columna de coordenadas"""
+def auditar_coordenada_generica(
+    dataset: str,
+    nombre_columna: str,
+    min_glob: float,
+    max_glob: float,
+    min_sa: float,
+    max_sa: float
+) -> tuple[int, list[str]]:
+    """
+    Función base reutilizable para auditar cualquier columna de coordenadas.
+    Valida globalmente (rango mundial) y regionalmente (América del Sur).
+    Devuelve: (cantidad_errores, lista_de_errores)
+    """
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
     
@@ -527,10 +557,18 @@ def auditar_coordenada_generica(dataset, nombre_columna, min_glob, max_glob, min
 
     return len(errores), errores
 
-def auditar_columna_latitud(dataset):
-    # Rango global lat: [-90, 90] | Rango SA: [LAT_MIN_SA, LAT_MAX_SA]
+def auditar_columna_latitud(dataset: str) -> tuple[int, list[str]]:
+    """
+    Agrupa y ejecuta todas las validaciones para el campo decimalLatitude.
+    Valida rango global [-90, 90] y rango para América del Sur.
+    Devuelve: (cantidad_errores, lista_de_errores)
+    """
     return auditar_coordenada_generica(dataset, 'decimalLatitude', -90.0, 90.0, LAT_MIN_SA, LAT_MAX_SA)
 
-def auditar_columna_longitud(dataset):
-    # Rango global lon: [-180, 180] | Rango SA: [LON_MIN_SA, LON_MAX_SA]
+def auditar_columna_longitud(dataset: str) -> tuple[int, list[str]]:
+    """
+    Agrupa y ejecuta todas las validaciones para el campo decimalLongitude.
+    Valida rango global [-180, 180] y rango para América del Sur.
+    Devuelve: (cantidad_errores, lista_de_errores)
+    """
     return auditar_coordenada_generica(dataset, 'decimalLongitude', -180.0, 180.0, LON_MIN_SA, LON_MAX_SA)

@@ -1,17 +1,24 @@
 import csv
 from pathlib import Path
+from typing import Union
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import obtener_indices_columnas
 from core.ejercicio5_actualizacion_registros import obtener_ruta_processed
-from core.ejercicio3_validaciones import validar_country_code_unico,validar_incertidumbre_unica,validar_par_coordenadas,validar_fecha_unica
+from core.ejercicio3_validaciones import (
+    validar_country_code_unico,
+    validar_incertidumbre_unica,
+    validar_par_coordenadas,
+    validar_fecha_unica
+)
 
 #------6a------
-
-def eliminar_por_id(dataset, id_buscado):
+def eliminar_por_id(dataset: str, id_buscado: str) -> str:
 	"""
-	Elimina el registro del dataset en donde el id buscado coincida id de un registro 
-	Si el id no está, devuelve que no lo encontró	
-	"""
+    Elimina el registro cuyo occurrenceID coincida con el id buscado.
+    Genera un nuevo archivo en processed_datasets sin el registro eliminado.
+    Si el id no existe, informa el error.
+    Devuelve: mensaje indicando el resultado de la operación.
+    """
 
 
 	ruta, sep = obtener_ruta_y_separador(dataset)
@@ -44,12 +51,13 @@ def eliminar_por_id(dataset, id_buscado):
 	return 'Registro eliminado' if eliminado else 'No se encontró el ID'
 
 #------6b------ 
-def eliminar_por_lista_suministrada(dataset, lista_suministrada, columna_de_interes):
+def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str], columna_de_interes: str) -> str:
 	"""
-	Elimina los registros cuyos valores en la columna indicada coincidan con los elementos
-	de la lista suministrada.
-	Si nunca coincide, devuelve No se elimino ningun registro.
-	"""
+    Elimina los registros cuyos valores en la columna indicada coincidan
+    con alguno de los elementos de la lista suministrada.
+    Genera un nuevo archivo en processed_datasets con los registros restantes.
+    Devuelve: mensaje indicando el resultado de la operación.
+    """
 	ruta, sep = obtener_ruta_y_separador(dataset)
 	indices = obtener_indices_columnas(dataset)
 	
@@ -81,10 +89,12 @@ def eliminar_por_lista_suministrada(dataset, lista_suministrada, columna_de_inte
 	return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
 
 #------6c------
-def eliminar_por_condicion(dataset, valor, columna_de_interes, operador):
+def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, operador: str) -> str:
     """
-    Elimina registros que cumplen una condicion entre los elementos de una columna deseada y el valor designado
-    Si la condicion nunca se da, devuelve No se elimino ningun registro 
+    Elimina registros que cumplen una condición entre los valores de una columna
+    y el valor indicado. Operadores válidos: !=, ==, >, >=, <, <=.
+    Genera un nuevo archivo en processed_datasets con los registros restantes.
+    Devuelve: mensaje indicando el resultado de la operación.
     """
     ruta, sep = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
@@ -154,9 +164,14 @@ def eliminar_por_condicion(dataset, valor, columna_de_interes, operador):
 
 #------6e------
 
-def sanitizar_dataset(dataset):
-	"""Elimina los registros que no puedan ser validados. 
-	En caso de haber campos vacios los tomamos como validos """
+def sanitizar_dataset(dataset: str) -> str:
+	"""
+    Elimina automáticamente los registros que no pasen las validaciones del ejercicio 3.
+    Valida: duplicados, coordenadas, fechas, countryCode e incertidumbre.
+    Los campos vacíos se consideran válidos.
+    Genera un nuevo archivo en processed_datasets con los registros válidos.
+    Devuelve: mensaje de confirmación.
+    """
 	ruta, sep = obtener_ruta_y_separador(dataset)
 	indices = obtener_indices_columnas(dataset)
 
@@ -245,7 +260,15 @@ def sanitizar_dataset(dataset):
 	return "Dataset sanitizado"
 
 #Punto 6f
-def reporte_sanitizacion(dataset):
+def reporte_sanitizacion(dataset: str) -> int:
+    """
+    Ejecuta la sanitización del dataset e imprime un reporte con:
+    - cantidad de registros iniciales
+    - cantidad de registros eliminados
+    - cantidad de registros finales
+    - porcentaje eliminado sobre el total
+    Devuelve: cantidad de registros en el archivo procesado.
+    """
     ruta_orig, sep = obtener_ruta_y_separador(dataset)
     ruta_proc = obtener_ruta_processed(dataset)
 

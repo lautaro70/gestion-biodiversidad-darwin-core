@@ -1,22 +1,22 @@
 
 from datetime import datetime
 from pathlib import Path
-import csv
 
-
-
-#Punto A
-
-def obtener_fecha_hora_actual():
+#------7a------
+def obtener_fecha_hora_actual() -> str:
+    """
+    Retorna la fecha y hora actual en formato legible: 'YYYY-MM-DD HH:MM:SS'.
+    """
     ahora = datetime.now()
     return ahora.strftime("%Y-%m-%d %H:%M:%S")
 
-
-
-
-#Punto B
-
-def registrar_operacion_en_log(mensaje, tipo="INFO"):
+#------7b------
+def registrar_operacion_en_log(mensaje: str, tipo: str = "INFO") -> None:
+    """
+    Escribe una línea en el archivo de log operations.log con el formato:
+    'fecha_hora | tipo | mensaje'.
+    Crea el archivo si no existe. Agrega sin sobrescribir el contenido previo.
+    """
     fecha_hora = obtener_fecha_hora_actual()
 
     ruta_log = Path(__file__).parent.parent.parent / 'logs' / 'operations.log'
@@ -28,7 +28,11 @@ def registrar_operacion_en_log(mensaje, tipo="INFO"):
         archivo.write(linea)
         #Y aca simplemente ponemos la linea del cambio en el archivo
 
-def inicializar_log():
+def inicializar_log() -> None:
+    """
+    Crea el archivo operations.log con el encabezado si no existe todavía.
+    Útil para inicializar el sistema de logs antes de la primera operación.
+    """
     ruta_log = Path(__file__).parent.parent.parent / 'logs' / 'operations.log'
     if not ruta_log.exists():
         with open(ruta_log, "w", encoding="utf-8") as f:

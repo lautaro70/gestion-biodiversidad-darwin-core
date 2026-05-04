@@ -1,6 +1,6 @@
 from pathlib import Path
 import csv
-from datetime import datetime
+from typing import Optional, Union
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import (
     columnas_dataset,
@@ -9,13 +9,16 @@ from core.ejercicio2_lectura_dataset import (
 from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
 
 #------4a------
-
-#La estructura que va a representar un registro va a ser un diccionario, donde cada columna va a ser una clave
-#y el dato de esa columna será el valor que le corresponde a la clave
+# La estructura que representa un registro es un diccionario,
+# donde cada columna es una clave y su dato es el valor correspondiente.
 
 #------4b------
-
-def generar_registro_vacio(columnas):
+def generar_registro_vacio(columnas: list[str]) -> dict[str, None]:
+    """
+    Genera un registro vacío con todos los valores inicializados en None.
+    Recibe la lista de columnas del dataset. No incluye el campo 'id'.
+    Devuelve: diccionario {nombre_columna: None}
+    """
     registro = {}
     for campo in columnas:
         if campo != "id":
@@ -23,10 +26,12 @@ def generar_registro_vacio(columnas):
     return registro
     
 #------4c------
-def validar_registro(dataset, registro):
+def validar_registro(dataset: str, registro: dict) -> tuple[bool, list[str]]:
     """
     Valida un registro antes de insertarlo.
-    REUTILIZA las funciones base de validación del ejercicio 3.
+    Reutiliza las funciones base de validación del ejercicio 3:
+    coordenadas, fechas, countryCode e incertidumbre.
+    Devuelve: (es_valido, lista_de_errores)
     """
     # Importamos las funciones base desde ejercicio3
     from core.ejercicio3_validaciones import (
@@ -77,11 +82,14 @@ def validar_registro(dataset, registro):
     return es_valido_total, errores
 
 #------4d------
-
-def registro_a_fila(dataset, registro):
+def registro_a_fila(dataset: str, registro: dict) -> Union[list[str], str]:
     """
-    Convierte un registro (diccionario del 4A) en una lista lista para 
-    agregar al CSV, deduciendo y agregando el ID correspondiente a cada dataset.
+    Convierte un registro (diccionario del 4A) en una lista lista para
+    agregar al CSV, deduciendo y agregando el ID correspondiente a cada dataset:
+    - IADIZA: occurrenceID = IADIZA:COI:{catalogNumber}
+    - Inaturalist: id autoincremental
+    - XenoCanto: id = {numero}@XC
+    Devuelve: lista de valores en el orden de columnas del CSV.
     """
 
     columnas = columnas_dataset(dataset)
@@ -120,10 +128,13 @@ def registro_a_fila(dataset, registro):
     return fila
 
 # --- FUNCIÓN AUXILIAR para pedir los datos (nuevas filas) ---
-def crear_registro_interactivo(dataset):
+def crear_registro_interactivo(dataset: str) -> tuple[Optional[list], Optional[list[str]]]:
     """
-    Pide por teclado los datos esenciales, los valida y retorna la fila lista.
-    Si hay error, retorna None y los errores.
+    Pide por teclado los datos esenciales de un registro, los valida
+    y retorna la fila lista para insertar.
+    Campos solicitados: catalogNumber, decimalLatitude, decimalLongitude,
+    eventDate, countryCode, coordinateUncertaintyInMeters, scientificName.
+    Devuelve: (fila_lista, None) si es válido, o (None, lista_errores) si falla.
     """
     columnas = columnas_dataset(dataset)
     nuevo_registro = generar_registro_vacio(columnas)
@@ -143,9 +154,12 @@ def crear_registro_interactivo(dataset):
         return None, errores
 
 #------4f (Versión Refactorizada) ------
-def insertar_registro_teclado(dataset):
-    """Pide datos por teclado, los valida y los inserta en un nuevo archivo
-    dentro de la carpeta 'processed_datasets'. Si el archivo ya existe, lo actualiza."""
+def insertar_registro_teclado(dataset: str) -> str:
+    """
+    Pide datos por teclado, los valida y los inserta en un nuevo archivo
+    dentro de la carpeta 'processed_datasets'. Si el archivo ya existe, lo actualiza.
+    Devuelve: mensaje indicando el resultado de la operación.
+    """
     ruta_orig, sep = obtener_ruta_y_separador(dataset)
     if not ruta_orig: return "Dataset no reconocido."
 
@@ -180,8 +194,13 @@ def insertar_registro_teclado(dataset):
     return "Registro único guardado."
 
 #------4g (Extendiendo la lógica del 4)f)) ------
-def insertar_multiples_registros(dataset):
-    """Punto 4.G: Extiende el 4.F para insertar MÚLTIPLES registros en lote."""
+def insertar_multiples_registros(dataset: str) -> str:
+    """
+    Extiende el 4.F para insertar múltiples registros en lote.
+    Solicita registros por teclado en un bucle hasta que el usuario indique que terminó.
+    Solo inserta los registros que pasen la validación.
+    Devuelve: mensaje con la cantidad de registros guardados.
+    """
     ruta_orig, sep = obtener_ruta_y_separador(dataset)
     if not ruta_orig: return "Dataset no reconocido."
 

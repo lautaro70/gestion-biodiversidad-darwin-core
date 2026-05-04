@@ -82,7 +82,7 @@ def guardar_dataset_actualizado(
 # 5A - BUSCAR REGISTROS
 # =========================================================
 
-def buscar_registros(dataset, filtros):
+def buscar_registros(dataset: str, filtros: dict) -> list[dict]:
     """
     Permite buscar registros utilizando múltiples columnas.
 
@@ -154,12 +154,12 @@ def buscar_registros(dataset, filtros):
 # =========================================================
 
 def actualizar_campo_registro(
-    dataset,
-    columna_identificadora,
-    valor_identificador,
-    columna_actualizar,
-    nuevo_valor
-):
+    dataset: str,
+    columna_identificadora: str,
+    valor_identificador: str,
+    columna_actualizar: str,
+    nuevo_valor: str
+) -> str:
     """
     Permite actualizar UN campo de un registro específico.
 
@@ -267,11 +267,11 @@ def actualizar_campo_registro(
 # =========================================================
 
 def actualizar_multiples_campos(
-    dataset,
-    columna_identificadora,
-    valor_identificador,
-    nuevos_valores
-):
+    dataset: str,
+    columna_identificadora: str,
+    valor_identificador: str,
+    nuevos_valores: dict
+) -> str:
     """
     Permite actualizar múltiples campos de un mismo registro.
 
@@ -414,7 +414,7 @@ def actualizar_registro_validado(
         return False, f"La columna '{columna_actualizar}' no existe."
 
     carpeta_destino = (
-        Path(__file__).parent.parent
+        Path(__file__).parent.parent.parent
         / "processed_datasets"
         / dataset
     )
@@ -525,7 +525,7 @@ def actualizar_multiples_campos_validado(
             )
 
     carpeta_destino = (
-        Path(__file__).parent.parent
+        Path(__file__).parent.parent.parent
         / "processed_datasets"
         / dataset
     )
