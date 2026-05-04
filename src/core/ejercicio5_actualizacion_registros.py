@@ -162,55 +162,39 @@ def actualizar_campo_registro(
 ) -> str:
     """
     Permite actualizar UN campo de un registro específico.
-
-    Retorna un mensaje indicando el resultado de la operación.
+    Implementa 7.D (éxito) y 7.F (errores).
     """
 
     ruta_lectura, separador = obtener_ruta_lectura(dataset)
-
     ruta_destino = obtener_ruta_processed(dataset)
-
     indices_columnas = obtener_indices_columnas(dataset)
 
     if isinstance(indices_columnas, str):
+        # -----------------7f: Error si no se pueden obtener los índices (como un archivo inexistente)
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE fallido en {dataset}. Motivo: {indices_columnas}", "ERROR")
         return indices_columnas
 
     # Verificamos que existan las columnas
     if columna_identificadora not in indices_columnas:
-        return (
-            f"No existe la columna "
-            f"'{columna_identificadora}'"
-        )
+        # ----------7f: Error de columna identificadora inexistente
+        error_msj = f"No existe la columna '{columna_identificadora}'"
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE fallido en {dataset}. {error_msj}", "ERROR")
+        return error_msj
 
     if columna_actualizar not in indices_columnas:
-        return (
-            f"No existe la columna "
-            f"'{columna_actualizar}'"
-        )
+        # -------7f Error de columna a actualizar inexistente
+        error_msj = f"No existe la columna '{columna_actualizar}'"
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE fallido en {dataset}. {error_msj}", "ERROR")
+        return error_msj
 
-    indice_identificador = indices_columnas[
-        columna_identificadora
-    ]
-
-    indice_actualizar = indices_columnas[
-        columna_actualizar
-    ]
+    indice_identificador = indices_columnas[columna_identificadora]
+    indice_actualizar = indices_columnas[columna_actualizar]
 
     filas_actualizadas = []
-
     registro_encontrado = False
 
-    with open(
-        ruta_lectura,
-        'r',
-        encoding='utf-8'
-    ) as archivo:
-
-        lector = csv.reader(
-            archivo,
-            delimiter=separador
-        )
-
+    with open(ruta_lectura, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=separador)
         encabezados = next(lector)
 
         # Guardamos encabezados
@@ -218,36 +202,29 @@ def actualizar_campo_registro(
 
         # Recorremos registros
         for fila in lector:
-
             nueva_fila = fila.copy()
 
             # Verificamos si es el registro buscado
             if (
                 indice_identificador < len(fila)
-                and fila[indice_identificador].strip()
-                == str(valor_identificador).strip()
+                and fila[indice_identificador].strip() == str(valor_identificador).strip()
             ):
-
                 registro_encontrado = True
 
-                # Si la fila es más corta,
-                # agregamos espacios vacíos
+                # Si la fila es más corta, agregamos espacios vacíos
                 while len(nueva_fila) <= indice_actualizar:
                     nueva_fila.append("")
 
                 # Actualizamos el valor
-                nueva_fila[indice_actualizar] = str(
-                    nuevo_valor
-                )
+                nueva_fila[indice_actualizar] = str(nuevo_valor)
 
             filas_actualizadas.append(nueva_fila)
 
     if not registro_encontrado:
-        return (
-            f"No se encontró ningún registro con "
-            f"{columna_identificadora} = "
-            f"'{valor_identificador}'"
-        )
+        # ---------7f: Error si el ID solicitado no existe en el dataset
+        error_msj = f"No se encontró ningún registro con {columna_identificadora} = '{valor_identificador}'"
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE fallido en {dataset}. {error_msj}", "ERROR")
+        return error_msj
 
     # Guardamos nueva versión del dataset
     guardar_dataset_actualizado(
@@ -257,13 +234,12 @@ def actualizar_campo_registro(
         filas_actualizadas=filas_actualizadas
     )
 
-    
-    cantidad_afectados = 1 if registro_encontrado else 0
+    # --------punto 7d
+    cantidad_afectados = 1
     mensaje = f"Punto 7.D: Actualización de campo '{columna_actualizar}' en {dataset}. Afectados: {cantidad_afectados}"
-    registrar_operacion_en_log(mensaje, "INFO")
+    registrar_operacion_en_log(mensaje, "UPDATE")
 
-    return "Registro actualizado correctamente.Total de afectados: {cantidad_afectados}"
-
+    return f"Registro actualizado correctamente. Total de afectados: {cantidad_afectados}"
 # =========================================================
 # 5C - ACTUALIZAR MÚLTIPLES CAMPOS
 # =========================================================
@@ -276,55 +252,39 @@ def actualizar_multiples_campos(
 ) -> str:
     """
     Permite actualizar múltiples campos de un mismo registro.
-
-    Retorna un mensaje indicando el resultado de la operación.
+    Implementa 7.D (éxito) y 7.F (errores).
     """
 
     ruta_lectura, separador = obtener_ruta_lectura(dataset)
-
     ruta_destino = obtener_ruta_processed(dataset)
-
     indices_columnas = obtener_indices_columnas(dataset)
 
     if isinstance(indices_columnas, str):
+        # ------7f: Error si el dataset no puede ser leído o no existe
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE múltiple fallido en {dataset}. Motivo: {indices_columnas}", "ERROR")
         return indices_columnas
 
     # Verificamos que exista la columna identificadora
     if columna_identificadora not in indices_columnas:
-        return (
-            f"No existe la columna "
-            f"'{columna_identificadora}'"
-        )
+        # ----------7f: Registro de error por columna de búsqueda inexistente
+        error_msj = f"No existe la columna '{columna_identificadora}'"
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE múltiple fallido en {dataset}. {error_msj}", "ERROR")
+        return error_msj
 
     # Verificamos que existan todas las columnas a modificar
     for columna in nuevos_valores:
-
         if columna not in indices_columnas:
+            # -----------7f: Registro de error por columna de actualización inexistente
+            error_msj = f"No existe la columna '{columna}'"
+            registrar_operacion_en_log(f"Punto 7.F: UPDATE múltiple fallido en {dataset}. {error_msj}", "ERROR")
+            return error_msj
 
-            return (
-                f"No existe la columna "
-                f"'{columna}'"
-            )
-
-    indice_identificador = indices_columnas[
-        columna_identificadora
-    ]
-
+    indice_identificador = indices_columnas[columna_identificadora]
     filas_actualizadas = []
-
     registro_encontrado = False
 
-    with open(
-        ruta_lectura,
-        'r',
-        encoding='utf-8'
-    ) as archivo:
-
-        lector = csv.reader(
-            archivo,
-            delimiter=separador
-        )
-
+    with open(ruta_lectura, 'r', encoding='utf-8') as archivo:
+        lector = csv.reader(archivo, delimiter=separador)
         encabezados = next(lector)
 
         # Guardamos encabezados
@@ -332,43 +292,32 @@ def actualizar_multiples_campos(
 
         # Recorremos fila por fila
         for fila in lector:
-
             nueva_fila = fila.copy()
 
             # Verificamos si es el registro buscado
             if (
                 indice_identificador < len(fila)
-                and fila[indice_identificador].strip()
-                == str(valor_identificador).strip()
+                and fila[indice_identificador].strip() == str(valor_identificador).strip()
             ):
-
                 registro_encontrado = True
 
                 # Aplicamos todas las modificaciones
                 for columna, nuevo_valor in nuevos_valores.items():
+                    indice_columna = indices_columnas[columna]
 
-                    indice_columna = indices_columnas[
-                        columna
-                    ]
-
-                    # Si la fila es corta,
-                    # agregamos posiciones vacías
+                    # Si la fila es corta, agregamos posiciones vacías
                     while len(nueva_fila) <= indice_columna:
                         nueva_fila.append("")
 
-                    nueva_fila[indice_columna] = str(
-                        nuevo_valor
-                    )
+                    nueva_fila[indice_columna] = str(nuevo_valor)
 
             filas_actualizadas.append(nueva_fila)
 
     if not registro_encontrado:
-
-        return (
-            f"No se encontró ningún registro con "
-            f"{columna_identificadora} = "
-            f"'{valor_identificador}'"
-        )
+        # ---------7f: Error si el ID no existe en el archivo
+        error_msj = f"No se encontró ningún registro con {columna_identificadora} = '{valor_identificador}'"
+        registrar_operacion_en_log(f"Punto 7.F: UPDATE múltiple fallido en {dataset}. {error_msj}", "ERROR")
+        return error_msj
 
     # Guardamos nueva versión del dataset
     guardar_dataset_actualizado(
@@ -378,12 +327,12 @@ def actualizar_multiples_campos(
         filas_actualizadas=filas_actualizadas
     )
 
-    cantidad_afectados = 1 if registro_encontrado else 0
-    mensaje = f"Punto 7.D: Actualización de campos en {dataset}. Afectados: {cantidad_afectados}"
-    registrar_operacion_en_log(mensaje, "INFO")
+    # ----7d: Registro de éxito con tipo update
+    cantidad_afectados = 1
+    mensaje = f"Punto 7.D: Actualización múltiple en {dataset}. Afectados: {cantidad_afectados}"
+    registrar_operacion_en_log(mensaje, "UPDATE")
 
     return f"Registro actualizado correctamente. Total de afectados: {cantidad_afectados}"
-
 # =========================================================
 # 5D - VALIDAR ACTUALIZACIONES
 # =========================================================

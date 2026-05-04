@@ -14,9 +14,7 @@ from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
 def eliminar_por_id(dataset: str, id_buscado: str) -> str:
     """
     Elimina el registro cuyo occurrenceID coincida con el id buscado.
-    Genera un nuevo archivo en processed_datasets sin el registro eliminado.
-    Si el id no existe, informa el error.
-    Devuelve: mensaje indicando el resultado de la operación.
+    Implementa 7.E (éxito) y 7.F (errores).
     """
 
     ruta, separador = obtener_ruta_y_separador(dataset)
@@ -25,7 +23,10 @@ def eliminar_por_id(dataset: str, id_buscado: str) -> str:
     indice_id = indices.get('occurrenceID') 
     
     if indice_id is None:
-        return 'No existe columna ID válida'
+        # ----7f: Error por falta de columna identificadora
+        error_msj = 'No existe columna ID válida'
+        registrar_operacion_en_log(f"Punto 7.F: DELETE fallido en {dataset}. {error_msj}", "ERROR")
+        return error_msj
 
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
 
@@ -42,22 +43,21 @@ def eliminar_por_id(dataset: str, id_buscado: str) -> str:
             for fila in lector:
                 if indice_id < len(fila) and str(fila[indice_id]).strip() == str(id_buscado).strip():
                     eliminado = True
-                    continue  # Saltea para no cargar la fila si el id buscado es igual al id de algun registro del dataset
+                    continue  # Saltea para no cargar la fila
                 escritor.writerow(fila)
 
-    # --- PUNTO 7e (Alineado con el bloque with)
     cantidad_eliminados = 1 if eliminado else 0
     
-    # Mensaje para el log
-    mensaje_log = f"Punto 7.E: Eliminación en {dataset}. Registros eliminados: {cantidad_eliminados}"
-    registrar_operacion_en_log(mensaje_log, "WARNING")
-
-    # Retornamos el mensaje indicando la cantidad (Punto 7.E)
     if eliminado:
+        # -----7e: Registro de éxito con tipo delete para que se vea mas claro, lo cambie
+        mensaje_log = f"Punto 7.E: Eliminación en {dataset}. Registros eliminados: {cantidad_eliminados}"
+        registrar_operacion_en_log(mensaje_log, "DELETE")
         return f"Registro eliminado. Total de afectados: {cantidad_eliminados}"
     else:
-        return f"No se encontró el ID. Total de afectados: {cantidad_eliminados}"
-    
+        # -------7f: Error porque el ID no existía en el dataset
+        error_msj = f"No se encontró el ID '{id_buscado}'. Total de afectados: 0"
+        registrar_operacion_en_log(f"Punto 7.F: DELETE fallido en {dataset}. ID inexistente.", "ERROR")
+        return error_msj
 
 	#---------6b
 def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str], columna_de_interes: str) -> str:
@@ -110,21 +110,20 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
 #------6c------
 def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, operador: str) -> str:
     """
-    Elimina registros que cumplen una condición entre los valores de una columna
-    y el valor indicado. Operadores válidos: !=, ==, >, >=, <, <=.
-    Genera un nuevo archivo en processed_datasets con los registros restantes.
-    Devuelve: mensaje indicando el resultado de la operación.
+    Elimina registros que cumplen una condición.
+    Implementa 7.E (conteo) y 7.F (errores de validación).
     """
     ruta, separador = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
 
     indice_columna = indices.get(columna_de_interes)
     if indice_columna is None:
+        # PUNTO 7.F: Error si la columna no existe
+        error_msj = f"Columna '{columna_de_interes}' no encontrada."
+        registrar_operacion_en_log(f"Punto 7.F: DELETE por condición fallido en {dataset}. {error_msj}", "ERROR")
         return 'No existe esa columna'
 
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
-
-    #----------- Contador para Punto 7e
     cantidad_eliminados = 0
     
     try:
@@ -133,6 +132,8 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
         valor_procesado = valor
 
     if operador not in ['>', '>=', '<', '<=', '==', '!=']:
+        # --------7f: Error si el operador es inválido
+        registrar_operacion_en_log(f"Punto 7.F: DELETE por condición fallido en {dataset}. Operador '{operador}' inválido.", "ERROR")
         return 'Operador no válido'
 
     with open(ruta, 'r', encoding='utf-8') as archivo:
@@ -169,22 +170,21 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
                         condicion = dato != valor_procesado
 
                     if condicion:
-                        cantidad_eliminados += 1 # Sumamos cada registro que se saltea (elimina)
+                        cantidad_eliminados += 1 
                         continue
 
                 escritor.writerow(fila)
 
-    # ---7eee
-    # Registro en el archivo log con la cantidad de afectados
-    mensaje_log = f"Punto 7.E: Eliminación por condición en {dataset}. Registros eliminados: {cantidad_eliminados}"
-    registrar_operacion_en_log(mensaje_log, "WARNING")
-
-    # Retorno con la cantidad (indicar cantidad de registros afectados)
+    # --- 7e y c ---
     if cantidad_eliminados > 0:
+        # Registro de éxito con tipo DELETE
+        mensaje_log = f"Punto 7.E: Eliminación por condición en {dataset}. Registros eliminados: {cantidad_eliminados}"
+        registrar_operacion_en_log(mensaje_log, "DELETE")[cite: 1]
         return f"Registros eliminados correctamente. Total de afectados: {cantidad_eliminados}"
     else:
+        # ------7f: Si no se eliminó nada, se registra como error de búsqueda/condición
+        registrar_operacion_en_log(f"Punto 7.F: DELETE en {dataset} sin coincidencias para la condición.", "ERROR")
         return f"No se eliminó ningún registro. Total de afectados: 0"
-
 #------6e------
 def sanitizar_dataset(dataset: str) -> str:
     """
