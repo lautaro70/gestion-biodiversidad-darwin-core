@@ -91,3 +91,20 @@ Una vez ejecutado, se abrirá automáticamente una pestaña en su navegador (gen
     * **common/**: Funciones auxiliares y constantes.
     * **notebooks/**: Desarrollo y pruebas de los ejercicios en formato .ipynb.
 * **requirements.txt**: Lista de bibliotecas necesarias para el proyecto.
+
+### Configuración Centralizada y Rutas (DRY)
+
+Para evitar la repetición de código y asegurar la consistencia en todo el proyecto (Notebooks y Aplicación), se utiliza un archivo de configuración centralizado ubicado en `src/common/constants.py`.
+
+### Constantes Globales y Estructura Restrictiva
+El sistema se rige por las siguientes definiciones constantes que **deben respetarse** para el correcto funcionamiento:
+
+* **BASE_DIR**: Se calcula dinámicamente usando `pathlib`, garantizando que las rutas funcionen de forma relativa a la raíz del proyecto en cualquier sistema operativo.
+* **LOG_PATH**: logs/operations.log — Ubicación única para el registro de auditoría del sistema.
+* **DATASETS**: Diccionario que centraliza la ubicación y el formato de los datos:
+    * **IADIZA**: Ruta: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/occurrence.txt` | Separador: `\t` (Tabulación).
+    * **Inaturalist**: Ruta: `raw_datasets/Inaturalist/Inaturalist/observations.csv` | Separador: `,` (Coma).
+    * **XenoCanto**: Ruta: `raw_datasets/XenoCanto/XenoCanto/Occurrence.txt` | Separador: `,` (Coma).
+
+### Uso Transversal
+Cualquier módulo que necesite acceder a los datos (como `src/pages/2_Estado_del_sistema.py` o los notebooks) utiliza la función `obtener_ruta_y_separador(dataset)` definida en `src/common/functions.py`, la cual importa directamente estas constantes. Esto asegura que un cambio en la estructura de carpetas solo deba modificarse en un único lugar.

@@ -28,3 +28,6 @@ country_codes_validos = {
     "PT", "NL", "BE", "CH", "SE", "NO", "DK", "FI",
     "JP", "CN", "KR", "IN", "AU", "NZ", "ZA", "XZ", "ZZ"
     }
+
+#Ruta de Log
+LOG_PATH = BASE_DIR / "logs" / "operations.log"
