@@ -1,38 +1,68 @@
 from pathlib import Path
 import csv
 from typing import Optional, Union
+
 from common.dataset_utils import obtener_ruta_y_separador
+
 from core.ejercicio2_lectura_dataset import (
     columnas_dataset,
     contar_registros
 )
-from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
+
+from core.ejercicio7_registro_de_operaciones import (
+    registrar_operacion_en_log
+)
 
 #------4a------
+
 # La estructura que representa un registro es un diccionario,
 # donde cada columna es una clave y su dato es el valor correspondiente.
 
+
 #------4b------
-def generar_registro_vacio(columnas: list[str]) -> dict[str, None]:
+
+def generar_registro_vacio(
+    columnas: list[str]
+) -> dict[str, None]:
     """
-    Genera un registro vacío con todos los valores inicializados en None.
-    Recibe la lista de columnas del dataset. No incluye el campo 'id'.
-    Devuelve: diccionario {nombre_columna: None}
+    Genera un registro vacío con todos los valores
+    inicializados en None.
+
+    Recibe la lista de columnas del dataset.
+    No incluye el campo 'id'.
+
+    Devuelve:
+    diccionario {nombre_columna: None}
     """
+
     registro = {}
-    for campo in columnas:
-        if campo != "id":
-            registro[campo]= None
+
+    for nombre_columna in columnas:
+
+        if nombre_columna != "id":
+
+            registro[nombre_columna] = None
+
     return registro
-    
+
+
 #------4c------
-def validar_registro(dataset: str, registro: dict) -> tuple[bool, list[str]]:
+
+def validar_registro(
+    dataset: str,
+    registro: dict
+) -> tuple[bool, list[str]]:
     """
     Valida un registro antes de insertarlo.
-    Reutiliza las funciones base de validación del ejercicio 3:
+
+    Reutiliza las funciones base de validación
+    del ejercicio 3:
     coordenadas, fechas, countryCode e incertidumbre.
-    Devuelve: (es_valido, lista_de_errores)
+
+    Devuelve:
+    (es_valido, lista_de_errores)
     """
+
     # Importamos las funciones base desde ejercicio3
     from core.ejercicio3_validaciones import (
         validar_par_coordenadas,
@@ -40,202 +70,516 @@ def validar_registro(dataset: str, registro: dict) -> tuple[bool, list[str]]:
         validar_country_code_unico,
         validar_incertidumbre_unica
     )
-    
+
     errores = []
-    
+
     # Validar coordenadas (3a y 3b juntos)
-    lat_valor = registro.get("decimalLatitude")
-    lon_valor = registro.get("decimalLongitude")
-    
-    son_validas, errores_coord = validar_par_coordenadas(lat_valor, lon_valor)
-    if not son_validas:
-        errores.extend(errores_coord)
-    
+
+    valor_latitud = registro.get("decimalLatitude")
+
+    valor_longitud = registro.get("decimalLongitude")
+
+    coordenadas_validas, errores_coordenadas = (
+        validar_par_coordenadas(
+            valor_latitud,
+            valor_longitud
+        )
+    )
+
+    if not coordenadas_validas:
+
+        errores.extend(errores_coordenadas)
+
     # Validar fechas (3c)
+
     columnas_fecha = {
-        "IADIZA": ['modified', 'eventDate', 'verbatimEventDate', 'dateIdentified', 'georeferencedDate', 'lastInterpreted', 'lastParsed', 'lastCrawled'],
-        "Inaturalist": ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified'],
-        "XenoCanto": ['eventDate', 'verbatimEventDate']
+
+        "IADIZA": [
+            'modified',
+            'eventDate',
+            'verbatimEventDate',
+            'dateIdentified',
+            'georeferencedDate',
+            'lastInterpreted',
+            'lastParsed',
+            'lastCrawled'
+        ],
+
+        "Inaturalist": [
+            'eventDate',
+            'modified',
+            'verbatimEventDate',
+            'dateIdentified'
+        ],
+
+        "XenoCanto": [
+            'eventDate',
+            'verbatimEventDate'
+        ]
     }
-    
-    for columna in columnas_fecha.get(dataset, []):
-        fecha_valor = registro.get(columna)
-        if fecha_valor is None or str(fecha_valor).strip() == "":
+
+    for columna_fecha in columnas_fecha.get(dataset, []):
+
+        valor_fecha = registro.get(columna_fecha)
+
+        if (
+            valor_fecha is None
+            or str(valor_fecha).strip() == ""
+        ):
             continue
-        es_valida, error_msg = validar_fecha_unica(fecha_valor)
-        if not es_valida:
-            errores.append(f"Columna '{columna}': {error_msg}")
-    
+
+        fecha_valida, mensaje_error = (
+            validar_fecha_unica(valor_fecha)
+        )
+
+        if not fecha_valida:
+
+            errores.append(
+                f"Columna '{columna_fecha}': {mensaje_error}"
+            )
+
     # Validar countryCode (3e)
-    country_valor = registro.get("countryCode")
-    es_valido, error_msg = validar_country_code_unico(country_valor)
-    if not es_valido and error_msg:
-        errores.append(error_msg)
-    
+
+    valor_country_code = registro.get("countryCode")
+
+    country_code_valido, mensaje_error = (
+        validar_country_code_unico(valor_country_code)
+    )
+
+    if not country_code_valido and mensaje_error:
+
+        errores.append(mensaje_error)
+
     # Validar incertidumbre (3f)
-    incertidumbre_valor = registro.get("coordinateUncertaintyInMeters")
-    es_valido, error_msg = validar_incertidumbre_unica(incertidumbre_valor)
-    if not es_valido and error_msg:
-        errores.append(error_msg)
-    
-    es_valido_total = len(errores) == 0
-    return es_valido_total, errores
+
+    valor_incertidumbre = registro.get(
+        "coordinateUncertaintyInMeters"
+    )
+
+    incertidumbre_valida, mensaje_error = (
+        validar_incertidumbre_unica(valor_incertidumbre)
+    )
+
+    if not incertidumbre_valida and mensaje_error:
+
+        errores.append(mensaje_error)
+
+    registro_valido = len(errores) == 0
+
+    return registro_valido, errores
+
 
 #------4d------
-def registro_a_fila(dataset: str, registro: dict) -> Union[list[str], str]:
+
+def registro_a_fila(
+    dataset: str,
+    registro: dict
+) -> Union[list[str], str]:
     """
-    Convierte un registro (diccionario del 4A) en una lista lista para
-    agregar al CSV, deduciendo y agregando el ID correspondiente a cada dataset:
-    - IADIZA: occurrenceID = IADIZA:COI:{catalogNumber}
-    - Inaturalist: id autoincremental
-    - XenoCanto: id = {numero}@XC
-    Devuelve: lista de valores en el orden de columnas del CSV.
+    Convierte un registro (diccionario del 4A)
+    en una lista lista para agregar al CSV,
+    deduciendo y agregando el ID correspondiente
+    a cada dataset:
+
+    - IADIZA:
+      occurrenceID = IADIZA:COI:{catalogNumber}
+
+    - Inaturalist:
+      id autoincremental
+
+    - XenoCanto:
+      id = {numero}@XC
+
+    Devuelve:
+    lista de valores en el orden de columnas del CSV.
     """
 
     columnas = columnas_dataset(dataset)
-    if isinstance (columnas,str): # si devolvió un string = hubo error
+
+    # si devolvió un string = hubo error
+    if isinstance(columnas, str):
+
         return f"Dataset '{dataset}' no reconocido."
-    
+
     # Generamos el ID según cada dataset
-    if dataset== "IADIZA": 
-        # Su occurrenceID se forma como IADIZA:COI:catalogNumber
-        catalog = registro.get('catalogNumber', '')
-        registro['occurrenceID']= f"IADIZA:COI:{catalog}"
-        # gbifID lo asigna GBIF, entonces lo dejamos vacío
-        registro ['gbifID']=''
-    
+
+    if dataset == "IADIZA":
+
+        # Su occurrenceID se forma como
+        # IADIZA:COI:catalogNumber
+
+        catalogo = registro.get('catalogNumber', '')
+
+        registro['occurrenceID'] = (
+            f"IADIZA:COI:{catalogo}"
+        )
+
+        # gbifID lo asigna GBIF,
+        # entonces lo dejamos vacío
+
+        registro['gbifID'] = ''
+
     elif dataset == "Inaturalist":
-        # El id es autoincremental, necesitamos saber cuantos registros hay para calcular el ID que sigue
-        total = contar_registros(dataset)
-        registro['id'] = str(total + 1)
-    
+
+        # El id es autoincremental,
+        # necesitamos saber cuántos registros hay
+
+        total_registros = contar_registros(dataset)
+
+        registro['id'] = str(total_registros + 1)
+
     elif dataset == "XenoCanto":
-        # El id ( XXXXXX@XC )se forma a partir del catalogNumber
-        catalog = registro.get('catalogNumber', '')
-         # catalogNumber es XC999540, entonces nos quedamos solo con el número (es decir, sin XC)
-        numero = catalog.replace('XC', '')
-        registro['id'] = f"{numero}@XC"
-    
-    # Convertimos el diccionario a lista en el orden de las columnas del CSV
+
+        # El id (XXXXXX@XC)
+        # se forma a partir del catalogNumber
+
+        catalogo = registro.get('catalogNumber', '')
+
+        # catalogNumber es XC999540,
+        # nos quedamos solo con el número
+
+        numero_catalogo = catalogo.replace('XC', '')
+
+        registro['id'] = f"{numero_catalogo}@XC"
+
+    # Convertimos el diccionario a lista
+    # en el orden de columnas del CSV
+
     fila = []
+
     for columna in columnas:
+
         valor = registro.get(columna)
+
         if valor is None:
+
             fila.append('')
+
         else:
+
             fila.append(str(valor))
 
     return fila
 
+
 # --- FUNCIÓN AUXILIAR para pedir los datos (nuevas filas) ---
-def crear_registro_interactivo(dataset: str) -> tuple[Optional[list], Optional[list[str]]]:
+
+def crear_registro_interactivo(
+    dataset: str
+) -> tuple[Optional[list], Optional[list[str]]]:
     """
-    Pide por teclado los datos esenciales de un registro, los valida
-    y retorna la fila lista para insertar.
-    Campos solicitados: catalogNumber, decimalLatitude, decimalLongitude,
-    eventDate, countryCode, coordinateUncertaintyInMeters, scientificName.
-    Devuelve: (fila_lista, None) si es válido, o (None, lista_errores) si falla.
+    Pide por teclado los datos esenciales de un registro,
+    los valida y retorna la fila lista para insertar.
+
+    Campos solicitados:
+    catalogNumber,
+    decimalLatitude,
+    decimalLongitude,
+    eventDate,
+    countryCode,
+    coordinateUncertaintyInMeters,
+    scientificName.
+
+    Devuelve:
+    (fila_lista, None) si es válido,
+    o (None, lista_errores) si falla.
     """
+
     columnas = columnas_dataset(dataset)
+
     nuevo_registro = generar_registro_vacio(columnas)
-    campos_clave = ['catalogNumber', 'decimalLatitude', 'decimalLongitude', 'eventDate', 'countryCode', 'coordinateUncertaintyInMeters', 'scientificName']
+
+    campos_clave = [
+        'catalogNumber',
+        'decimalLatitude',
+        'decimalLongitude',
+        'eventDate',
+        'countryCode',
+        'coordinateUncertaintyInMeters',
+        'scientificName'
+    ]
 
     for campo in campos_clave:
-        if campo in columnas:
-            valor = input(f"Ingrese {campo} (Enter para dejar vacío): ")
-            if valor.strip() != "":
-                nuevo_registro[campo] = valor.strip()
 
-    es_valido, errores = validar_registro(dataset, nuevo_registro)
-    
-    if es_valido:
-        return registro_a_fila(dataset, nuevo_registro), None
+        if campo in columnas:
+
+            valor_ingresado = input(
+                f"Ingrese {campo} "
+                f"(Enter para dejar vacío): "
+            )
+
+            if valor_ingresado.strip() != "":
+
+                nuevo_registro[campo] = (
+                    valor_ingresado.strip()
+                )
+
+    registro_valido, errores = validar_registro(
+        dataset,
+        nuevo_registro
+    )
+
+    if registro_valido:
+
+        return (
+            registro_a_fila(dataset, nuevo_registro),
+            None
+        )
+
     else:
+
         return None, errores
 
+
 #------4f (Versión Refactorizada) ------
+
 def insertar_registro_teclado(dataset: str) -> str:
     """
-    Pide datos por teclado, los valida y los inserta en un nuevo archivo
-    dentro de la carpeta 'processed_datasets'. Si el archivo ya existe, lo actualiza.
-    Devuelve: mensaje indicando el resultado de la operación.
+    Pide datos por teclado,
+    los valida y los inserta
+    en un nuevo archivo dentro de la carpeta
+    'processed_datasets'.
+
+    Si el archivo ya existe, lo actualiza.
+
+    Devuelve:
+    mensaje indicando el resultado de la operación.
     """
-    ruta_orig, sep = obtener_ruta_y_separador(dataset)
-    if not ruta_orig: return "Dataset no reconocido."
+
+    ruta_origen, separador = (
+        obtener_ruta_y_separador(dataset)
+    )
+
+    if not ruta_origen:
+
+        return "Dataset no reconocido."
 
     # Definimos rutas
-    carpeta_dest = Path(__file__).parent.parent.parent / 'processed_datasets' / dataset
-    # exist_ok=True evita que el programa explote si la carpeta ya está creada
-    #.mkdir Creá una nueva carpeta en la ruta que guardé en la variable carpeta_dest, parents=true crea al padre si no existe
-    carpeta_dest.mkdir(parents=True, exist_ok=True)
-    ruta_dest = carpeta_dest / f"{dataset}_processed.csv"
 
-    print(f"\n--- Ingresando UN registro para {dataset} ---")
-    
-    #Usamos el motor reutilizable
-    nueva_fila, errores = crear_registro_interactivo(dataset)
-    
+    carpeta_destino = (
+        Path(__file__).parent.parent.parent
+        / 'processed_datasets'
+        / dataset
+    )
+
+    # exist_ok=True evita que explote
+    # si la carpeta ya está creada
+
+    carpeta_destino.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    ruta_destino = (
+        carpeta_destino
+        / f"{dataset}_processed.csv"
+    )
+
+    print(
+        f"\n--- Ingresando UN registro para {dataset} ---"
+    )
+
+    # Usamos el motor reutilizable
+
+    nueva_fila, errores = (
+        crear_registro_interactivo(dataset)
+    )
+
     if not nueva_fila:
+
         return f"Error: {errores}"
 
-    #Guardamos (Escribimos una sola vez)
-    if ruta_dest.exists():
-        with open(ruta_dest, 'a', encoding='utf-8', newline='') as f_dest:
-            csv.writer(f_dest, delimiter=sep).writerow(nueva_fila)
+    # Guardamos (Escribimos una sola vez)
+
+    if ruta_destino.exists():
+
+        with open(
+            ruta_destino,
+            'a',
+            encoding='utf-8',
+            newline=''
+        ) as archivo_destino:
+
+            escritor_csv = csv.writer(
+                archivo_destino,
+                delimiter=separador
+            )
+
+            escritor_csv.writerow(nueva_fila)
+
     else:
-        with open(ruta_orig, 'r', encoding='utf-8') as f_orig, open(ruta_dest, 'w', encoding='utf-8', newline='') as f_dest:
-            escritor = csv.writer(f_dest, delimiter=sep)
-            for fila in csv.reader(f_orig, delimiter=sep): escritor.writerow(fila)
-            escritor.writerow(nueva_fila)
-            
-    mensaje = f"Punto 7.C: Inserción manual de 1 registro en {dataset}"
-    registrar_operacion_en_log(mensaje, "INFO")  #Aca seria el punto 7c donde registramos en el log
-            
+
+        with open(
+            ruta_origen,
+            'r',
+            encoding='utf-8'
+        ) as archivo_origen, open(
+            ruta_destino,
+            'w',
+            encoding='utf-8',
+            newline=''
+        ) as archivo_destino:
+
+            escritor_csv = csv.writer(
+                archivo_destino,
+                delimiter=separador
+            )
+
+            for fila in csv.reader(
+                archivo_origen,
+                delimiter=separador
+            ):
+
+                escritor_csv.writerow(fila)
+
+            escritor_csv.writerow(nueva_fila)
+
+    mensaje = (
+        f"Punto 7.C: Inserción manual "
+        f"de 1 registro en {dataset}"
+    )
+
+    # Aca seria el punto 7c
+    # donde registramos en el log
+
+    registrar_operacion_en_log(
+        mensaje,
+        "INFO"
+    )
+
     return "Registro único guardado."
 
-#------4g (Extendiendo la lógica del 4)f)) ------
+
+#------4g (Extendiendo la lógica del 4f) ------
+
 def insertar_multiples_registros(dataset: str) -> str:
     """
     Extiende el 4.F para insertar múltiples registros en lote.
-    Solicita registros por teclado en un bucle hasta que el usuario indique que terminó.
-    Solo inserta los registros que pasen la validación.
-    Devuelve: mensaje con la cantidad de registros guardados.
-    """
-    ruta_orig, sep = obtener_ruta_y_separador(dataset)
-    if not ruta_orig: return "Dataset no reconocido."
 
-    carpeta_dest = Path(__file__).parent.parent.parent / 'processed_datasets' / dataset
-    carpeta_dest.mkdir(parents=True, exist_ok=True)
-    ruta_dest = carpeta_dest / f"{dataset}_processed.csv"
+    Solicita registros por teclado en un bucle
+    hasta que el usuario indique que terminó.
+
+    Solo inserta los registros que pasen la validación.
+
+    Devuelve:
+    mensaje con la cantidad de registros guardados.
+    """
+
+    ruta_origen, separador = (
+        obtener_ruta_y_separador(dataset)
+    )
+
+    if not ruta_origen:
+
+        return "Dataset no reconocido."
+
+    carpeta_destino = (
+        Path(__file__).parent.parent.parent
+        / 'processed_datasets'
+        / dataset
+    )
+
+    carpeta_destino.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    ruta_destino = (
+        carpeta_destino
+        / f"{dataset}_processed.csv"
+    )
 
     nuevas_filas = []
-    #Bucle que reutiliza el mismo motor del 4.F
+
+    # Bucle que reutiliza el mismo motor del 4.F
+
     while True:
-        fila, errores = crear_registro_interactivo(dataset)
+
+        fila, errores = crear_registro_interactivo(
+            dataset
+        )
+
         if fila:
+
             nuevas_filas.append(fila)
+
             print("Registro encolado.")
+
         else:
+
             print(f"Error: {errores}")
-            
-        if input("\n¿Ingresar otro? (s/n): ").lower() != 's':
+
+        continuar = input(
+            "\n¿Ingresar otro? (s/n): "
+        ).lower()
+
+        if continuar != 's':
             break
 
-    if not nuevas_filas: return "Operación cancelada."
+    if not nuevas_filas:
 
-    #Guardamos (Escribimos todas las filas de una sola vez)
-    if ruta_dest.exists():
-        with open(ruta_dest, 'a', encoding='utf-8', newline='') as f_dest:
-            csv.writer(f_dest, delimiter=sep).writerows(nuevas_filas)   # Note el plural: writerows
+        return "Operación cancelada."
+
+    # Guardamos todas las filas de una sola vez
+
+    if ruta_destino.exists():
+
+        with open(
+            ruta_destino,
+            'a',
+            encoding='utf-8',
+            newline=''
+        ) as archivo_destino:
+
+            escritor_csv = csv.writer(
+                archivo_destino,
+                delimiter=separador
+            )
+
+            # Note el plural: writerows
+            escritor_csv.writerows(nuevas_filas)
+
     else:
-        with open(ruta_orig, 'r', encoding='utf-8') as f_orig, open(ruta_dest, 'w', encoding='utf-8', newline='') as f_dest:
-            escritor = csv.writer(f_dest, delimiter=sep)
-            for fila in csv.reader(f_orig, delimiter=sep): escritor.writerow(fila)
-            escritor.writerows(nuevas_filas)
 
-#----------Punto 7c
-    cantidad = len(nuevas_filas)
-    mensaje = f"Punto 7.C: Inserción masiva de {cantidad} registros en {dataset}"
-    registrar_operacion_en_log(mensaje, "INFO")
+        with open(
+            ruta_origen,
+            'r',
+            encoding='utf-8'
+        ) as archivo_origen, open(
+            ruta_destino,
+            'w',
+            encoding='utf-8',
+            newline=''
+        ) as archivo_destino:
 
-    return f"{len(nuevas_filas)} registros guardados."
+            escritor_csv = csv.writer(
+                archivo_destino,
+                delimiter=separador
+            )
+
+            for fila in csv.reader(
+                archivo_origen,
+                delimiter=separador
+            ):
+
+                escritor_csv.writerow(fila)
+
+            escritor_csv.writerows(nuevas_filas)
+
+#----------Punto 7c----------
+
+    cantidad_registros = len(nuevas_filas)
+
+    mensaje = (
+        f"Punto 7.C: Inserción masiva de "
+        f"{cantidad_registros} registros en {dataset}"
+    )
+
+    registrar_operacion_en_log(
+        mensaje,
+        "INFO"
+    )
+
+    return (
+        f"{len(nuevas_filas)} registros guardados."
+    )

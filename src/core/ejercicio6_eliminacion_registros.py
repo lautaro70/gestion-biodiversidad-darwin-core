@@ -20,15 +20,13 @@ def eliminar_por_id(dataset: str, id_buscado: str) -> str:
     Devuelve: mensaje indicando el resultado de la operación.
     """
 
-
-	ruta, sep = obtener_ruta_y_separador(dataset)
+	ruta, separador = obtener_ruta_y_separador(dataset)
 	indices = obtener_indices_columnas(dataset)
 
-	idx_id = indices.get('occurrenceID') 
+	indice_id = indices.get('occurrenceID') 
 	
-	if idx_id is None:
+	if indice_id is None:
 		return 'No existe columna ID válida'
-
 
 	ruta_carpeta_procesada = obtener_ruta_processed(dataset)
 
@@ -36,19 +34,20 @@ def eliminar_por_id(dataset: str, id_buscado: str) -> str:
 
 	with open(ruta, 'r', encoding='utf-8') as archivo:
 		with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
-			lector = csv.reader(archivo, delimiter=sep)
-			escritor = csv.writer(archivo_procesado, delimiter=sep)
+			lector = csv.reader(archivo, delimiter=separador)
+			escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-			header = next(lector)
-			escritor.writerow(header)
+			encabezado = next(lector)
+			escritor.writerow(encabezado)
 
 			for fila in lector:
-				if idx_id < len(fila) and str(fila[idx_id]).strip() == str(id_buscado).strip():
+				if indice_id < len(fila) and str(fila[indice_id]).strip() == str(id_buscado).strip():
 					eliminado = True
 					continue  # Saltea para no cargar la fila si el id buscado es igual al id de algun registro del dataset
 				escritor.writerow(fila)
 
 	return 'Registro eliminado' if eliminado else 'No se encontró el ID'
+
 
 #------6b------ 
 def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str], columna_de_interes: str) -> str:
@@ -58,12 +57,12 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
     Genera un nuevo archivo en processed_datasets con los registros restantes.
     Devuelve: mensaje indicando el resultado de la operación.
     """
-	ruta, sep = obtener_ruta_y_separador(dataset)
+	ruta, separador = obtener_ruta_y_separador(dataset)
 	indices = obtener_indices_columnas(dataset)
 	
-	idx_interes = indices.get(columna_de_interes)
+	indice_columna = indices.get(columna_de_interes)
 
-	if idx_interes is None:
+	if indice_columna is None:
 		return 'No existe esa columna'
 
 	lista_suministrada = [elemento.strip() for elemento in lista_suministrada]
@@ -74,19 +73,20 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
 
 	with open(ruta, 'r', encoding='utf-8') as archivo:
 		with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
-			lector = csv.reader(archivo, delimiter=sep)
-			escritor = csv.writer(archivo_procesado, delimiter=sep)
+			lector = csv.reader(archivo, delimiter=separador)
+			escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-			header = next(lector)
-			escritor.writerow(header)
+			encabezado = next(lector)
+			escritor.writerow(encabezado)
 
 			for fila in lector:
-				if idx_interes < len(fila) and fila[idx_interes].strip() in lista_suministrada:
+				if indice_columna < len(fila) and fila[indice_columna].strip() in lista_suministrada:
 					eliminado = True
 					continue  # Saltea si esta en la lista
 				escritor.writerow(fila)
 
 	return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
+
 
 #------6c------
 def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, operador: str) -> str:
@@ -96,11 +96,11 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
     Genera un nuevo archivo en processed_datasets con los registros restantes.
     Devuelve: mensaje indicando el resultado de la operación.
     """
-    ruta, sep = obtener_ruta_y_separador(dataset)
+    ruta, separador = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
 
-    idx_interes = indices.get(columna_de_interes)
-    if idx_interes is None:
+    indice_columna = indices.get(columna_de_interes)
+    if indice_columna is None:
         return 'No existe esa columna'
 
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
@@ -118,15 +118,15 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
     with open(ruta, 'r', encoding='utf-8') as archivo:
         with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
 
-            lector = csv.reader(archivo, delimiter=sep)
-            escritor = csv.writer(archivo_procesado, delimiter=sep)
+            lector = csv.reader(archivo, delimiter=separador)
+            escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-            header = next(lector)
-            escritor.writerow(header)
+            encabezado = next(lector)
+            escritor.writerow(encabezado)
 
             for fila in lector:
-                if idx_interes < len(fila):
-                    dato_string = fila[idx_interes].strip()
+                if indice_columna < len(fila):
+                    dato_string = fila[indice_columna].strip()
 
                     try:
                         dato = float(dato_string)
@@ -162,6 +162,7 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
 
     return 'Registros eliminados' if eliminado else 'No se elimino ningun registro'
 
+
 #------6e------
 
 def sanitizar_dataset(dataset: str) -> str:
@@ -172,7 +173,7 @@ def sanitizar_dataset(dataset: str) -> str:
     Genera un nuevo archivo en processed_datasets con los registros válidos.
     Devuelve: mensaje de confirmación.
     """
-	ruta, sep = obtener_ruta_y_separador(dataset)
+	ruta, separador = obtener_ruta_y_separador(dataset)
 	indices = obtener_indices_columnas(dataset)
 
 	ruta_dest = obtener_ruta_processed(dataset)
@@ -181,36 +182,36 @@ def sanitizar_dataset(dataset: str) -> str:
 	#set() es una estructura de datos que no tiene orden y no admite duplicados,
 	#es util porque es mas rapida para buscar elementos, como en este caso los id  
 
-	idx_id = indices.get('occurrenceID')
-	if idx_id is None:
-		idx_id = indices.get('gbifID')
-	if idx_id is None:
-		idx_id = indices.get('id')
+	indice_id = indices.get('occurrenceID')
+	if indice_id is None:
+		indice_id = indices.get('gbifID')
+	if indice_id is None:
+		indice_id = indices.get('id')
 			
-	idx_lat = indices.get('decimalLatitude')
-	idx_lon = indices.get('decimalLongitude')
-	idx_fecha = indices.get('eventDate')
-	idx_cc = indices.get('countryCode')
-	idx_inc = indices.get('coordinateUncertaintyInMeters')
+	indice_latitud = indices.get('decimalLatitude')
+	indice_longitud = indices.get('decimalLongitude')
+	indice_fecha = indices.get('eventDate')
+	indice_country_code = indices.get('countryCode')
+	indice_incertidumbre = indices.get('coordinateUncertaintyInMeters')
 
 	with open(ruta, 'r', encoding='utf-8') as archivo:
 		with open(ruta_dest, 'w', encoding='utf-8', newline='') as archivo_procesado:
 
-			lector = csv.reader(archivo, delimiter=sep)
-			escritor = csv.writer(archivo_procesado, delimiter=sep)
+			lector = csv.reader(archivo, delimiter=separador)
+			escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-			header = next(lector)
-			escritor.writerow(header)
+			encabezado = next(lector)
+			escritor.writerow(encabezado)
 
 			for fila in lector:
 				es_valida = True
 
 				# -------- Duplicados --------
-				if idx_id is not None:
-					if idx_id >= len(fila):
+				if indice_id is not None:
+					if indice_id >= len(fila):
 						es_valida = False  
 					else:
-						id_actual = fila[idx_id].strip()
+						id_actual = fila[indice_id].strip()
 						if id_actual == "":
 							es_valida = False  
 						elif id_actual in ids_vistos:
@@ -224,38 +225,38 @@ def sanitizar_dataset(dataset: str) -> str:
 				# y aca solo queremos eliminar en una sola pasada
 
 				# -------- Coordenadas --------
-				if es_valida and idx_lat is not None and idx_lon is not None:
-					lat = fila[idx_lat] if idx_lat < len(fila) else ""
-					lon = fila[idx_lon] if idx_lon < len(fila) else ""
-					ok, _ = validar_par_coordenadas(lat, lon)
-					if not ok:
+				if es_valida and indice_latitud is not None and indice_longitud is not None:
+					lat = fila[indice_latitud] if indice_latitud < len(fila) else ""
+					lon = fila[indice_longitud] if indice_longitud < len(fila) else ""
+					es_valido, _ = validar_par_coordenadas(lat, lon)
+					if not es_valido:
 						es_valida = False
 
 				# -------- Fecha --------
 				columnas_fecha = ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified']
 
 				for columna in columnas_fecha:
-					idx_fecha = indices.get(columna)
-					if es_valida and idx_fecha is not None and idx_fecha < len(fila):
-						fecha = fila[idx_fecha]
+					indice_fecha = indices.get(columna)
+					if es_valida and indice_fecha is not None and indice_fecha < len(fila):
+						fecha = fila[indice_fecha]
 
 						if fecha and str(fecha).strip():
-							ok, _ = validar_fecha_unica(fecha)
-							if not ok:
+							es_valido, _ = validar_fecha_unica(fecha)
+							if not es_valido:
 								es_valida = False
 
 				# -------- Country code --------
-				if es_valida and idx_cc is not None and idx_cc < len(fila):
-					cc = fila[idx_cc]
-					ok, _ = validar_country_code_unico(cc)
-					if not ok:
+				if es_valida and indice_country_code is not None and indice_country_code < len(fila):
+					country_code = fila[indice_country_code]
+					es_valido, _ = validar_country_code_unico(country_code)
+					if not es_valido:
 						es_valida = False
 
 				# -------- Incertidumbre --------
-				if es_valida and idx_inc is not None and idx_inc < len(fila):
-					inc = fila[idx_inc]
-					ok, _ = validar_incertidumbre_unica(inc)
-					if not ok:
+				if es_valida and indice_incertidumbre is not None and indice_incertidumbre < len(fila):
+					incertidumbre = fila[indice_incertidumbre]
+					es_valido, _ = validar_incertidumbre_unica(incertidumbre)
+					if not es_valido:
 						es_valida = False
 
 				# -------- Escritura --------
@@ -263,6 +264,7 @@ def sanitizar_dataset(dataset: str) -> str:
 					escritor.writerow(fila)
 
 	return "Dataset sanitizado"
+
 
 #Punto 6f
 def reporte_sanitizacion(dataset: str) -> int:
@@ -274,18 +276,18 @@ def reporte_sanitizacion(dataset: str) -> int:
     - porcentaje eliminado sobre el total
     Devuelve: cantidad de registros en el archivo procesado.
     """
-    ruta_orig, sep = obtener_ruta_y_separador(dataset)
+    ruta_orig, separador = obtener_ruta_y_separador(dataset)
     ruta_proc = obtener_ruta_processed(dataset)
 
-    with open(ruta_orig, 'r', encoding='utf-8') as f:
-        lector_orig = csv.reader(f, delimiter=sep)
+    with open(ruta_orig, 'r', encoding='utf-8') as archivo:
+        lector_orig = csv.reader(archivo, delimiter=separador)
         next(lector_orig) #me corro del encabezado
         total_orig = sum(1 for fila in lector_orig)
 
     sanitizar_dataset(dataset) #Aca hacemos la sanitización del dataset donde crea el archico en la carpeta de procesados
         
-    with open(ruta_proc, 'r', encoding='utf-8') as f:
-        lector_proc = csv.reader(f, delimiter=sep)
+    with open(ruta_proc, 'r', encoding='utf-8') as archivo:
+        lector_proc = csv.reader(archivo, delimiter=separador)
         next(lector_proc)
         total_proc = sum(1 for fila in lector_proc) #Obtenemos el total de procesados 
 
