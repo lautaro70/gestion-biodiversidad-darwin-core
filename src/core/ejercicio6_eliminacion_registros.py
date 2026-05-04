@@ -186,106 +186,104 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
         return f"No se eliminó ningún registro. Total de afectados: 0"
 
 #------6e------
-
 def sanitizar_dataset(dataset: str) -> str:
-	"""
+    """
     Elimina automáticamente los registros que no pasen las validaciones del ejercicio 3.
     Valida: duplicados, coordenadas, fechas, countryCode e incertidumbre.
     Los campos vacíos se consideran válidos.
     Genera un nuevo archivo en processed_datasets con los registros válidos.
     Devuelve: mensaje de confirmación.
     """
-	ruta, separador = obtener_ruta_y_separador(dataset)
-	indices = obtener_indices_columnas(dataset)
+    ruta, separador = obtener_ruta_y_separador(dataset)
+    indices = obtener_indices_columnas(dataset)
 
-	ruta_dest = obtener_ruta_processed(dataset)
+    ruta_dest = obtener_ruta_processed(dataset)
+    cantidad_eliminados = 0 #-----7e
+    ids_vistos = set()
 
-	ids_vistos = set()
-	#set() es una estructura de datos que no tiene orden y no admite duplicados,
-	#es util porque es mas rapida para buscar elementos, como en este caso los id  
+    indice_id = indices.get('occurrenceID')
+    if indice_id is None:
+        indice_id = indices.get('gbifID')
+    if indice_id is None:
+        indice_id = indices.get('id')
+            
+    indice_latitud = indices.get('decimalLatitude')
+    indice_longitud = indices.get('decimalLongitude')
+    indice_fecha = indices.get('eventDate')
+    indice_country_code = indices.get('countryCode')
+    indice_incertidumbre = indices.get('coordinateUncertaintyInMeters')
 
-	indice_id = indices.get('occurrenceID')
-	if indice_id is None:
-		indice_id = indices.get('gbifID')
-	if indice_id is None:
-		indice_id = indices.get('id')
-			
-	indice_latitud = indices.get('decimalLatitude')
-	indice_longitud = indices.get('decimalLongitude')
-	indice_fecha = indices.get('eventDate')
-	indice_country_code = indices.get('countryCode')
-	indice_incertidumbre = indices.get('coordinateUncertaintyInMeters')
+    with open(ruta, 'r', encoding='utf-8') as archivo:
+        with open(ruta_dest, 'w', encoding='utf-8', newline='') as archivo_procesado:
 
-	with open(ruta, 'r', encoding='utf-8') as archivo:
-		with open(ruta_dest, 'w', encoding='utf-8', newline='') as archivo_procesado:
+            lector = csv.reader(archivo, delimiter=separador)
+            escritor = csv.writer(archivo_procesado, delimiter=separador)
 
-			lector = csv.reader(archivo, delimiter=separador)
-			escritor = csv.writer(archivo_procesado, delimiter=separador)
+            encabezado = next(lector)
+            escritor.writerow(encabezado)
 
-			encabezado = next(lector)
-			escritor.writerow(encabezado)
+            for fila in lector:
+                es_valida = True
 
-			for fila in lector:
-				es_valida = True
+                # -------- Duplicados --------
+                if indice_id is not None:
+                    if indice_id >= len(fila):
+                        es_valida = False  
+                    else:
+                        id_actual = fila[indice_id].strip()
+                        if id_actual == "":
+                            es_valida = False  
+                        elif id_actual in ids_vistos:
+                            es_valida = False 
+                        else:
+                            ids_vistos.add(id_actual)
+                            
+                # -------- Coordenadas --------
+                if es_valida and indice_latitud is not None and indice_longitud is not None:
+                    lat = fila[indice_latitud] if indice_latitud < len(fila) else ""
+                    lon = fila[indice_longitud] if indice_longitud < len(fila) else ""
+                    es_valido, _ = validar_par_coordenadas(lat, lon)
+                    if not es_valido:
+                        es_valida = False
 
-				# -------- Duplicados --------
-				if indice_id is not None:
-					if indice_id >= len(fila):
-						es_valida = False  
-					else:
-						id_actual = fila[indice_id].strip()
-						if id_actual == "":
-							es_valida = False  
-						elif id_actual in ids_vistos:
-							es_valida = False 
-						else:
-							ids_vistos.add(id_actual)
-							
-				# No reutilizo la funcion del ejercicio 3d de duplicados porque:
-				# - recorre todo el dataset
-				# - devuelve lista de duplicados
-				# y aca solo queremos eliminar en una sola pasada
+                # -------- Fecha --------
+                columnas_fecha = ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified']
 
-				# -------- Coordenadas --------
-				if es_valida and indice_latitud is not None and indice_longitud is not None:
-					lat = fila[indice_latitud] if indice_latitud < len(fila) else ""
-					lon = fila[indice_longitud] if indice_longitud < len(fila) else ""
-					es_valido, _ = validar_par_coordenadas(lat, lon)
-					if not es_valido:
-						es_valida = False
+                for columna in columnas_fecha:
+                    indice_fecha = indices.get(columna)
+                    if es_valida and indice_fecha is not None and indice_fecha < len(fila):
+                        fecha = fila[indice_fecha]
 
-				# -------- Fecha --------
-				columnas_fecha = ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified']
+                        if fecha and str(fecha).strip():
+                            es_valido, _ = validar_fecha_unica(fecha)
+                            if not es_valido:
+                                es_valida = False
 
-				for columna in columnas_fecha:
-					indice_fecha = indices.get(columna)
-					if es_valida and indice_fecha is not None and indice_fecha < len(fila):
-						fecha = fila[indice_fecha]
+                # -------- Country code --------
+                if es_valida and indice_country_code is not None and indice_country_code < len(fila):
+                    country_code = fila[indice_country_code]
+                    es_valido, _ = validar_country_code_unico(country_code)
+                    if not es_valido:
+                        es_valida = False
 
-						if fecha and str(fecha).strip():
-							es_valido, _ = validar_fecha_unica(fecha)
-							if not es_valido:
-								es_valida = False
+                # -------- Incertidumbre --------
+                if es_valida and indice_incertidumbre is not None and indice_incertidumbre < len(fila):
+                    incertidumbre = fila[indice_incertidumbre]
+                    es_valido, _ = validar_incertidumbre_unica(incertidumbre)
+                    if not es_valido:
+                        es_valida = False
 
-				# -------- Country code --------
-				if es_valida and indice_country_code is not None and indice_country_code < len(fila):
-					country_code = fila[indice_country_code]
-					es_valido, _ = validar_country_code_unico(country_code)
-					if not es_valido:
-						es_valida = False
+                # -------- Escritura --------
+                if es_valida:
+                    escritor.writerow(fila)
+                else:
+                    cantidad_eliminados += 1 #----------7e
 
-				# -------- Incertidumbre --------
-				if es_valida and indice_incertidumbre is not None and indice_incertidumbre < len(fila):
-					incertidumbre = fila[indice_incertidumbre]
-					es_valido, _ = validar_incertidumbre_unica(incertidumbre)
-					if not es_valido:
-						es_valida = False
+    # ---Punto 7e
+    mensaje_log = f"Punto 7.E: Sanitización automática en {dataset}. Registros eliminados por no cumplir requisitos: {cantidad_eliminados}"
+    registrar_operacion_en_log(mensaje_log, "WARNING")
 
-				# -------- Escritura --------
-				if es_valida:
-					escritor.writerow(fila)
-
-	return "Dataset sanitizado"
+    return f"Dataset sanitizado. Registros eliminados: {cantidad_eliminados}"
 
 
 #Punto 6f
@@ -303,31 +301,37 @@ def reporte_sanitizacion(dataset: str) -> int:
 
     with open(ruta_orig, 'r', encoding='utf-8') as archivo:
         lector_orig = csv.reader(archivo, delimiter=separador)
-        next(lector_orig) #me corro del encabezado
+        next(lector_orig) # me corro del encabezado
         total_orig = sum(1 for fila in lector_orig)
 
-    sanitizar_dataset(dataset) #Aca hacemos la sanitización del dataset donde crea el archico en la carpeta de procesados
+    # Aca hacemos la sanitización del dataset donde crea el archivo en la carpeta de procesados
+    sanitizar_dataset(dataset) 
         
     with open(ruta_proc, 'r', encoding='utf-8') as archivo:
         lector_proc = csv.reader(archivo, delimiter=separador)
         next(lector_proc)
-        total_proc = sum(1 for fila in lector_proc) #Obtenemos el total de procesados 
+        total_proc = sum(1 for fila in lector_proc) # Obtenemos el total de procesados 
 
-    #Aca ya hacemos los calculos para obtener el total de eliminados y el porcentaje
-
+    # Cálculos para obtener el total de eliminados
     eliminados = total_orig - total_proc
+
+    # -------- 7e Registro en Log
+    mensaje_reporte = f"Punto 7.E: Reporte final generado para {dataset}. Finales: {total_proc}, Eliminados: {eliminados}"
+    registrar_operacion_en_log(mensaje_reporte, "INFO")
+#-----sigue el 6f 
+
     if total_orig > 0:
         porcentaje = (eliminados * 100) / total_orig
     else:
         porcentaje = 0
 
-#Y aca informamos 
+    # Informamos por pantalla
     print("================================")
     print("      REPORTE DEL PUNTO 6.F     ")
     print("================================")
     print(f"Registros iniciales: {total_orig}")
     print(f"Registros eliminados: {eliminados}")
-    print(f"Registros finales:   {total_proc}")
+    print(f"Registros finales:    {total_proc}")
     print(f"Porcentaje eliminado: {porcentaje:.2f}%")
     print("================================")
         
