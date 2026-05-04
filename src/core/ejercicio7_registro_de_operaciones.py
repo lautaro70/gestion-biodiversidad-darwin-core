@@ -1,5 +1,5 @@
 from datetime import datetime
-from pathlib import Path
+from common.constants import LOG_PATH
 
 #------7a------
 def obtener_fecha_hora_actual() -> str:
@@ -18,12 +18,10 @@ def registrar_operacion_en_log(mensaje: str, tipo: str = "INFO") -> None:
     """
     fecha_hora = obtener_fecha_hora_actual()
 
-    ruta_log = Path(__file__).parent.parent.parent / 'logs' / 'operations.log'
-
 #Aca armo la linea del cambio que se estaria realizando
     linea = f"{fecha_hora} | {tipo} | {mensaje}\n"
 
-    with open(ruta_log, "a", encoding="utf-8") as archivo:
+    with open(LOG_PATH, "a", encoding="utf-8") as archivo:
         archivo.write(linea)
         #Y aca simplemente ponemos la linea del cambio en el archivo
 
@@ -32,9 +30,8 @@ def inicializar_log() -> None:
     Crea el archivo operations.log con el encabezado si no existe todavía.
     Útil para inicializar el sistema de logs antes de la primera operación.
     """
-    ruta_log = Path(__file__).parent.parent.parent / 'logs' / 'operations.log'
-    if not ruta_log.exists():
-        with open(ruta_log, "w", encoding="utf-8") as f:
+    if not LOG_PATH.exists():
+        with open(LOG_PATH, "w", encoding="utf-8") as f:
             f.write("Fecha_Hora | Nivel | Detalles\n")
 
 #-------Punto 7c

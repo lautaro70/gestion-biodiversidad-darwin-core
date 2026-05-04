@@ -6,7 +6,7 @@ Este proyecto es una herramienta diseñada para la gestión, validación y explo
 * **Bellocq Catalina**
 * **Bof Máximo Dante**
 * **Mascetti Augusto**
-* **Penetta Lautaro**
+* **Pennetta Lautaro**
 * **Suarez Franco**
 
 ## Configuración del Entorno
@@ -100,7 +100,7 @@ Para evitar la repetición de código y asegurar la consistencia en todo el proy
 El sistema se rige por las siguientes definiciones constantes que **deben respetarse** para el correcto funcionamiento:
 
 * **BASE_DIR**: Se calcula dinámicamente usando `pathlib`, garantizando que las rutas funcionen de forma relativa a la raíz del proyecto en cualquier sistema operativo.
-* **LOG_PATH**: logs/operations.log — Ubicación única para el registro de auditoría del sistema.
+* **LOG_PATH**: logs/operations.log — Ubicación única para el registro de auditoría del sistema, se crea automático al ejecutar la celda que inicializa el archivo.
 * **DATASETS**: Diccionario que centraliza la ubicación y el formato de los datos:
     * **IADIZA**: Ruta: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/occurrence.txt` | Separador: `\t` (Tabulación).
     * **Inaturalist**: Ruta: `raw_datasets/Inaturalist/Inaturalist/observations.csv` | Separador: `,` (Coma).
