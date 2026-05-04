@@ -1,6 +1,6 @@
 from pathlib import Path
 import csv
-from typing import Dict, List, Tuple, Any
+from typing import List, Tuple
 
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import (

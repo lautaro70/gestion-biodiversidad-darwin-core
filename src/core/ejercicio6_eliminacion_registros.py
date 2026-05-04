@@ -1,6 +1,4 @@
 import csv
-from pathlib import Path
-from typing import Union
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import obtener_indices_columnas
 from core.ejercicio5_actualizacion_registros import obtener_ruta_processed
