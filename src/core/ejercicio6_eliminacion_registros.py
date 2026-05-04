@@ -59,7 +59,8 @@ def eliminar_por_id(dataset: str, id_buscado: str) -> str:
         registrar_operacion_en_log(f"Punto 7.F: DELETE fallido en {dataset}. ID inexistente.", "ERROR")
         return error_msj
 
-	#---------6b
+
+#---------6b
 def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str], columna_de_interes: str) -> str:
     """
     Elimina los registros cuyos valores en la columna indicada coincidan
@@ -179,12 +180,14 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
     if cantidad_eliminados > 0:
         # Registro de éxito con tipo DELETE
         mensaje_log = f"Punto 7.E: Eliminación por condición en {dataset}. Registros eliminados: {cantidad_eliminados}"
-        registrar_operacion_en_log(mensaje_log, "DELETE")[cite: 1]
+        registrar_operacion_en_log(mensaje_log, "DELETE")
         return f"Registros eliminados correctamente. Total de afectados: {cantidad_eliminados}"
     else:
         # ------7f: Si no se eliminó nada, se registra como error de búsqueda/condición
         registrar_operacion_en_log(f"Punto 7.F: DELETE en {dataset} sin coincidencias para la condición.", "ERROR")
         return f"No se eliminó ningún registro. Total de afectados: 0"
+    
+    
 #------6e------
 def sanitizar_dataset(dataset: str) -> str:
     """
@@ -318,6 +321,7 @@ def reporte_sanitizacion(dataset: str) -> int:
     # -------- 7e Registro en Log
     mensaje_reporte = f"Punto 7.E: Reporte final generado para {dataset}. Finales: {total_proc}, Eliminados: {eliminados}"
     registrar_operacion_en_log(mensaje_reporte, "INFO")
+    
 #-----sigue el 6f 
 
     if total_orig > 0:
