@@ -126,7 +126,7 @@ def validar_registro(
             # Formato: fecha | dataset | tipo | cantidad | 
             # Usamos "VALIDATION" como tipo de operación para ser específicos
             mensaje_error_log = f"Punto 7.F: Falló validación en {dataset}. Motivo: {error}"
-            registrar_operacion_en_log(mensaje_error_log, "ERROR")[cite: 1]
+            registrar_operacion_en_log(mensaje_error_log, "ERROR")
 
     return registro_valido, errores
 
