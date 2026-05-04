@@ -198,6 +198,15 @@ def sanitizar_dataset(dataset: str) -> str:
     indices = obtener_indices_columnas(dataset)
 
     ruta_dest = obtener_ruta_processed(dataset)
+
+    #------7f
+    if ruta is None or indices is None:
+        registrar_operacion_en_log(
+            f"Punto 7.F: INSERT fallido. Dataset '{dataset}' inválido.",
+            "ERROR"
+        )
+        return "Dataset no reconocido o inválido."
+    
     cantidad_eliminados = 0 #-----7e
     ids_vistos = set()
 
@@ -228,13 +237,18 @@ def sanitizar_dataset(dataset: str) -> str:
                 # -------- Duplicados --------
                 if indice_id is not None:
                     if indice_id >= len(fila):
-                        es_valida = False  
-                    else:
+
                         id_actual = fila[indice_id].strip()
                         if id_actual == "":
                             es_valida = False  
+                            mensaje_fallo = f"Punto 7.F: Error en DELETE para {dataset}. Detalle: {"ID VACIO"}"
+                            registrar_operacion_en_log(mensaje_fallo, "ERROR")
+                           
                         elif id_actual in ids_vistos:
                             es_valida = False 
+                            mensaje_fallo = f"Punto 7.F: Error en DELETE para {dataset}. Detalle: {"ID DUPLICADO"}"
+                            registrar_operacion_en_log(mensaje_fallo, "ERROR")
+                           
                         else:
                             ids_vistos.add(id_actual)
                             
@@ -245,6 +259,9 @@ def sanitizar_dataset(dataset: str) -> str:
                     es_valido, _ = validar_par_coordenadas(lat, lon)
                     if not es_valido:
                         es_valida = False
+                        mensaje_fallo = f"Punto 7.F: Error en DELETE para {dataset}. Detalle: {"COORDENADA INVALIDA"}"
+                        registrar_operacion_en_log(mensaje_fallo, "ERROR")
+                
 
                 # -------- Fecha --------
                 columnas_fecha = ['eventDate', 'modified', 'verbatimEventDate', 'dateIdentified']
@@ -258,6 +275,9 @@ def sanitizar_dataset(dataset: str) -> str:
                             es_valido, _ = validar_fecha_unica(fecha)
                             if not es_valido:
                                 es_valida = False
+                                mensaje_fallo = f"Punto 7.F: Error en DELETE para {dataset}. Detalle: {"FECHA INVALIDA"}"
+                                registrar_operacion_en_log(mensaje_fallo, "ERROR")
+                
 
                 # -------- Country code --------
                 if es_valida and indice_country_code is not None and indice_country_code < len(fila):
@@ -265,6 +285,8 @@ def sanitizar_dataset(dataset: str) -> str:
                     es_valido, _ = validar_country_code_unico(country_code)
                     if not es_valido:
                         es_valida = False
+                        mensaje_fallo = f"Punto 7.F: Error en DELETE para {dataset}. Detalle: {"COUNTRYCODE INVALIDO"}"
+                        registrar_operacion_en_log(mensaje_fallo, "ERROR")
 
                 # -------- Incertidumbre --------
                 if es_valida and indice_incertidumbre is not None and indice_incertidumbre < len(fila):
@@ -272,6 +294,8 @@ def sanitizar_dataset(dataset: str) -> str:
                     es_valido, _ = validar_incertidumbre_unica(incertidumbre)
                     if not es_valido:
                         es_valida = False
+                        mensaje_fallo = f"Punto 7.F: Error en DELETE para {dataset}. Detalle: {"INCERTIDUMBRE INVALIDA"}"
+                        registrar_operacion_en_log(mensaje_fallo, "ERROR")
 
                 # -------- Escritura --------
                 if es_valida:
