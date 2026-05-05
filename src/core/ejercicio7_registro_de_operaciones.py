@@ -30,6 +30,8 @@ def inicializar_log() -> None:
     Crea el archivo operations.log con el encabezado si no existe todavía.
     Útil para inicializar el sistema de logs antes de la primera operación.
     """
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    
     if not LOG_PATH.exists():
         with open(LOG_PATH, "w", encoding="utf-8") as f:
             f.write("Fecha_Hora | Nivel | Detalles\n")
