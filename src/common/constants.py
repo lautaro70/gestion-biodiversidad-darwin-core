@@ -31,3 +31,20 @@ country_codes_validos = {
 
 #Ruta de Log
 LOG_PATH = BASE_DIR / "logs" / "operations.log"
+
+PROCESSED_DATASETS = {
+    "IADIZA": {
+        "path": BASE_DIR / "processed_datasets" / "IADIZA" / "IADIZA_processed.csv",
+        "separator": "\t"
+    },
+
+    "Inaturalist": {
+        "path": BASE_DIR / "processed_datasets" / "Inaturalist" / "Inaturalist_processed.csv",
+        "separator": ","
+    },
+
+    "XenoCanto": {
+        "path": BASE_DIR / "processed_datasets" / "XenoCanto" / "XenoCanto_processed.csv",
+        "separator": ","
+    }
+}
