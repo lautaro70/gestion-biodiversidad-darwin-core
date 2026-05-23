@@ -1,4 +1,5 @@
 import streamlit as st
+from common.barra_lateral import renderizar_barra_lateral
 
 st.set_page_config(page_title="Aplicacion Biodiversidad grupo 47")
 st.title("Aplicacion Biodiversidad - Grupo 47")
@@ -33,3 +34,6 @@ Utilice el menú lateral ubicado a la izquierda de la pantalla para desplazarse 
 * **Estado del sistema:** Muestra un registro histórico (logs) de las operaciones realizadas sobre los datasets.
 * **Búsqueda:** *(Próximamente)*  
 * **Visualización:** *(Próximamente)*""")
+
+# Llamo a la funcion para dibujar el selector (Punto 1.B)
+renderizar_barra_lateral()
