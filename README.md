@@ -1,13 +1,31 @@
 # Proyecto de Gestión de Biodiversidad - Grupo 47
 
-Este proyecto es una herramienta diseñada para la gestión, validación y exploración de datos biológicos utilizando el estándar **Darwin Core (DwC)**. Permite procesar datasets y visualizar logs de operaciones a través de una interfaz interactiva.
-
 ## Integrantes
 * **Bellocq Catalina**
 * **Bof Máximo Dante**
 * **Mascetti Augusto**
 * **Pennetta Lautaro**
 * **Suarez Franco**
+
+Este proyecto es una herramienta diseñada para la gestión, validación y exploración de datos biológicos utilizando el estándar **Darwin Core (DwC)**. Permite procesar datasets y visualizar logs de operaciones a través de una interfaz interactiva.
+
+El objetivo principal es resolver los problemas típicos de los datos provenientes del mundo real (registros corruptos, coordenadas fuera de rango, fechas inconsistentes y datos taxonómicos incompletos) mediante un procesamiento por lotes eficiente que cuida el consumo de memoria RAM. La herramienta implementa:
+*   **Lectura y Análisis Estructural**: Exploración agnóstica de archivos del dataset (`.txt` y `.csv`) calculando métricas de completitud sin sobrecargar el sistema.
+*   **Validación Crítica de Calidad**: Control estricto de coordenadas geográficas globales y cotas regionales específicas para América del Sur, detección de duplicados e inconsistencias temporales.
+*   **Persistencia Inmutable**: Los archivos originales en formato crudo nunca se modifican; todas las operaciones de saneamiento generan nuevas versiones limpias orientadas a la producción.
+*   **Auditoría (Logging)**: Registro detallado y cronológico de cada transacción para asegurar la trazabilidad del sistema.
+*   **Interfaz Interactiva**: Un panel de control web dinámico que expone los reportes estadísticos y el estado transaccional.
+
+## Descarga de Datasets
+Para replicar los análisis y ejecutar la plataforma, es necesario descargar los conjuntos de datos oficiales provistos por la cátedra, los cuales corresponden a muestras adaptadas de las siguientes fuentes:
+
+1. **IADIZA**: Registros de ocurrencias biológicas.
+2. **Xeno-canto**: Grabaciones y registros de aves.
+3. **iNaturalist**: Observaciones de biodiversidad ciudadana[cite: 7].
+
+**Enlace Oficial de Descarga:** 
+Todos los datasets comprimidos deben ser descargados de forma obligatoria desde el servidor de la facultad en el siguiente enlace:
+https://archivos.linti.unlp.edu.ar/index.php/s/rPG30E5wUwy6Xbo
 
 ## Configuración del Entorno
 Para asegurar que el software funcione correctamente en Windows, Linux o Mac, siga estos pasos para configurar el entorno virtual e instalar las dependencias.
@@ -54,19 +72,27 @@ Con el entorno activado, instale las bibliotecas necesarias detalladas en el arc
 Bash
 pip install -r requirements.txt
 
-### Instrucciones de Ejecución
-Ejercicio de Procesamiento (Notebooks):
-Para ejecutar y visualizar los análisis preliminares y validaciones, puede abrir los archivos .ipynb ubicados en src/notebooks/ utilizando VS Code o Jupyter Notebook.
+#### Contenido de los Notebooks:
+**ejercicio2.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio2_lectura_dataset.py
+**ejercicio3.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio3_validaciones.py
+**ejercicio4.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio4_insercion_registros.py
+**ejercicio5.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio5_actualizacion_registros.py
+**ejercicio6.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio6_eliminacion_registros.py
+**ejercicio7.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio7_registro_de_operaciones.py
 
-**Ejemplo de uso:**
+#### Instrucciones detalladas de ejecución:
+**Opción A: Desde Visual Studio Code (Recomendado)**
+1. Abra VS Code en la carpeta raíz del proyecto (`code/`).
+2. Instale la extensión oficial de **Jupyter** en VS Code si aún no la tiene.
+3. Navegue en el explorador de archivos y abra `src/notebooks/ejercicio_3.ipynb`.
+4. En la esquina superior derecha del editor, haga clic en **Select Kernel** y asegúrese de elegir la ruta del entorno virtual del proyecto (`.venv`).
+5. Ejecute las celdas secuencialmente haciendo clic en el botón de "Play" al lado de cada una.
 
-1-Abrí VS Code.
-
-2-Selecciona el archivo src/notebooks/ejercicio_3.ipynb.
-
-3-Asegúrese de seleccionar el kernel del entorno virtual .venv creado anteriormente.
-
-4-Ejecute todas las celdas para ver el procesamiento de datos (Inicie con la primera).
+**Opción B: Desde la Terminal clásica**
+1. Asegúrese de tener el entorno virtual activado en su terminal.
+2. Instale la interfaz ejecutando: `pip install notebook` (solo si no dispone de ella).
+3. Inicie el servidor local corriendo: `jupyter notebook`
+4. Se abrirá una interfaz en su navegador web. Ingrese a la carpeta `src/notebooks/` y abra el archivo deseado.
 
 ### Aplicación Interactiva (Streamlit)
 La aplicación web centraliza todas las funcionalidades en una interfaz gráfica. Para iniciarla, ejecute el siguiente comando desde la raíz del proyecto:
