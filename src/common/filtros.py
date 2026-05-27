@@ -39,8 +39,6 @@ def renderizar_filtros_dwc(df):
     MAPEO_DWC = {
         "Nombre científico": "scientificName",
         "Observador": "recordedBy",
-        "País": "country",
-        "Provincia": "stateProvince",
         "Fecha": "eventDate"}
 
     #Máscara base
@@ -56,7 +54,13 @@ def renderizar_filtros_dwc(df):
             mascara_combinada &= df[col_nc].isin(filtro_nc)
 
     # --- Filtro: País ---
-    col_pais = MAPEO_DWC["País"]
+    # Buscamos si existe "country" o si existe "countryCode"
+    col_pais = None
+    if "country" in df.columns:
+        col_pais = "country"
+    elif "countryCode" in df.columns:
+        col_pais = "countryCode"
+        
     if col_pais in df.columns:
         opciones_pais = df[col_pais].dropna().unique().tolist()
         filtro_pais = col1.multiselect("País:", options=opciones_pais)
@@ -66,7 +70,13 @@ def renderizar_filtros_dwc(df):
     col3, col4 = st.columns(2)
 
     # --- Filtro: Provincia ---
-    col_prov = MAPEO_DWC["Provincia"]
+    # Buscamos si existe "stateProvince" o si usamos "locality" como plan B
+    col_prov = None
+    if "stateProvince" in df.columns:
+        col_prov = "stateProvince"
+    elif "locality" in df.columns:
+        col_prov = "locality"
+
     if col_prov in df.columns:
         opciones_prov = df[col_prov].dropna().unique().tolist()
         filtro_prov = col3.multiselect("Provincia:", options=opciones_prov)
