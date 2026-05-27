@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from common.barra_lateral import renderizar_barra_lateral
 from core.carga_datasets import cargar_dataset_procesado
-from common.filtros import renderizar_busqueda_libre, renderizar_filtros_dwc
+from common.filtros import renderizar_busqueda_libre, renderizar_filtros_dwc, renderizar_resultados_paginados
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)
 renderizar_barra_lateral()
@@ -28,8 +28,12 @@ try:
     df_filtrado_combinado = renderizar_filtros_dwc(df)
     
     # Renderizamos el resultado del 2.B
-    st.success(f"Se encontraron **{df_filtrado_combinado.shape[0]}** registros aplicando estos filtros combinados.")
+    st.success(f"Se encontraron {df_filtrado_combinado.shape[0]} registros aplicando estos filtros combinados.")
     st.dataframe(df_filtrado_combinado)
+
+    # Le pasamos "comb" como prefijo
+    st.markdown("### Ejercicio 2.C: Resultados paginado")
+    renderizar_resultados_paginados(df_filtrado_combinado, key_prefix="comb")
 
 except Exception as e:
     st.error(f"Error al cargar o procesar el dataset '{dataset_seleccionado}'. Detalle: {e}")

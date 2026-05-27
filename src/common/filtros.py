@@ -28,7 +28,11 @@ def renderizar_busqueda_libre(df):
         st.info(f"Se encontraron {df_filtrado.shape[0]} registros coincidentes.")
         
         # Muestro el resultado como tabla interactiva
-        st.dataframe(df_filtrado, use_container_width=True)    
+        st.dataframe(df_filtrado)
+        #LA FUNCIÓN DEL 2.C
+        # Le paso "libre" como prefijo para que las variables internas no choquen
+        st.markdown("#### Resultados (Vista Paginada)")
+        renderizar_resultados_paginados(df_filtrado, key_prefix="libre")    
     else:
         st.caption("Escriba un término en el buscador para visualizar los resultados.")
 
@@ -60,7 +64,7 @@ def renderizar_filtros_dwc(df):
         col_pais = "country"
     elif "countryCode" in df.columns:
         col_pais = "countryCode"
-        
+
     if col_pais in df.columns:
         opciones_pais = df[col_pais].dropna().unique().tolist()
         filtro_pais = col1.multiselect("País:", options=opciones_pais)
@@ -118,3 +122,69 @@ def renderizar_filtros_dwc(df):
 
     # Retornamos el DataFrame ya recortado con las condiciones activas
     return df[mascara_combinada]
+
+def renderizar_resultados_paginados(df_filtrado, key_prefix):
+    """Ejercicio 2.C: Renderiza una tabla interactiva con paginación, 
+    columnas relevantes y vista de detalle."""
+    
+    if df_filtrado.empty:
+        st.warning("No se encontraron registros que coincidan con la búsqueda.")
+        return
+
+    #Indicador de cantidad de registros
+    st.success(f"Se encontraron {df_filtrado.shape[0]} registros.")
+
+    #Selección de columnas relevantes
+    columnas_preferidas = [
+        "occurrenceID", "scientificName", "eventDate", "recordedBy",
+        "country", "countryCode", "stateProvince", "locality"
+    ]
+    #Intersecto para evitar errores si alguna columna no existe en este dataset
+    cols_a_mostrar = [col for col in columnas_preferidas if col in df_filtrado.columns]
+
+    st.markdown("#### Resultados (Vista Paginada)")
+    
+    #Lógica de Paginación Matemática
+    tamano_pagina = 15
+    total_registros = len(df_filtrado)
+    total_paginas = (total_registros // tamano_pagina) + (1 if total_registros % tamano_pagina > 0 else 0)
+
+    #Creo columnas para que el selector de página no ocupe toda la pantalla
+    col_pag1, col_pag2 = st.columns([1, 3])
+    with col_pag1:
+        # Usamos key_prefix para que Streamlit no produzca error si usamos la función dos veces en la página
+        pagina_actual = st.number_input(
+            "Página:", 
+            min_value=1, 
+            max_value=total_paginas, 
+            step=1, 
+            key=f"pag_{key_prefix}"
+        )
+
+    inicio = (pagina_actual - 1) * tamano_pagina
+    fin = inicio + tamano_pagina
+
+    #Recorto el DataFrame: solo las columnas relevantes y solo las 15 filas de esta página
+    df_pagina = df_filtrado[cols_a_mostrar].iloc[inicio:fin]
+
+    #Tabla interactiva para el ordenamiento
+    st.dataframe(df_pagina)
+
+    #Acceso al detalle completo de un registro
+    st.markdown("#### Ver Detalle Completo")
+    if "occurrenceID" in df_pagina.columns:
+        # Usamos los IDs que se están mostrando en esta página específica
+        opciones_ids = ["Seleccione un registro..."] + df_pagina["occurrenceID"].tolist()
+        id_seleccionado = st.selectbox(
+            "Seleccione el ID de la observación para desplegar todos sus atributos:", 
+            options=opciones_ids,
+            key=f"detalle_{key_prefix}"
+        )
+        
+        if id_seleccionado != "Seleccione un registro...":
+            #Busco la fila exacta en el DataFrame filtrado original (para tener todas las columnas)
+            detalle_registro = df_filtrado[df_filtrado["occurrenceID"] == id_seleccionado].iloc[0]
+            #st.json dibuja los datos como un diccionario muy prolijo y fácil de leer
+            st.json(detalle_registro.dropna().to_dict())
+    else:
+        st.info("El dataset no posee la columna 'occurrenceID' para identificar el detalle.")
