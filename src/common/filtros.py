@@ -37,7 +37,9 @@ def renderizar_filtros_dwc(df):
     Retorna el DataFrame filtrado."""
     MAPEO_DWC = {
         "Nombre científico": "scientificName",
+        "Provincia": "stateProvince",
         "Observador": "recordedBy",
+        "Pais": "country",
         "Fecha": "eventDate"}
 
     #Máscara base
@@ -53,12 +55,7 @@ def renderizar_filtros_dwc(df):
             mascara_combinada &= df[col_nc].isin(filtro_nc)
 
     # --- Filtro: País ---
-    # Buscamos si existe "country" o si existe "countryCode"
-    col_pais = None
-    if "country" in df.columns:
-        col_pais = "country"
-    elif "countryCode" in df.columns:
-        col_pais = "countryCode"
+    col_pais = MAPEO_DWC["Pais"]
 
     if col_pais in df.columns:
         opciones_pais = df[col_pais].dropna().unique().tolist()
@@ -69,12 +66,7 @@ def renderizar_filtros_dwc(df):
     col3, col4 = st.columns(2)
 
     # --- Filtro: Provincia ---
-    # Buscamos si existe "stateProvince" o si usamos "locality" como plan B
-    col_prov = None
-    if "stateProvince" in df.columns:
-        col_prov = "stateProvince"
-    elif "locality" in df.columns:
-        col_prov = "locality"
+    col_prov = MAPEO_DWC["Provincia"]
 
     if col_prov in df.columns:
         opciones_prov = df[col_prov].dropna().unique().tolist()
@@ -228,22 +220,10 @@ def resumen_estadistico(df_filtrado):
         especies_unicas = 0
 
     #Calculo Países
-    col_pais = None
-    if "country" in df_filtrado.columns:
-        col_pais = "country"
-    elif "countryCode" in df_filtrado.columns:
-        col_pais = "countryCode"
-        
-    paises_unicos = df_filtrado[col_pais].nunique(dropna=True) if col_pais else 0
+    paises_unicos = df_filtrado["country"].nunique(dropna=True) if "country" else 0
 
     #Calculo Provincias/Localidades
-    col_prov = None
-    if "stateProvince" in df_filtrado.columns:
-        col_prov = "stateProvince"
-    elif "locality" in df_filtrado.columns:
-        col_prov = "locality"
-        
-    provincias_unicas = df_filtrado[col_prov].nunique(dropna=True) if col_prov else 0
+    provincias_unicas = df_filtrado["stateProvince"].nunique(dropna=True) if "stateProvince" else 0
 
     #Calculo Observadores
     if "recordedBy" in df_filtrado.columns:
