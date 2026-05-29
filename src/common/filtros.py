@@ -24,11 +24,6 @@ def renderizar_busqueda_libre(df):
         # Aplico la máscara al DataFrame original
         df_filtrado = df[mascara]
         
-        # Muestro la cantidad de coincidencias usando .shape[0]
-        st.info(f"Se encontraron {df_filtrado.shape[0]} registros coincidentes.")
-        
-        # Muestro el resultado como tabla interactiva
-        st.dataframe(df_filtrado)
         #LA FUNCIÓN DEL 2.C
         # Le paso "libre" como prefijo para que las variables internas no choquen
         st.markdown("#### Resultados (Vista Paginada)")
@@ -123,6 +118,28 @@ def renderizar_filtros_dwc(df):
     # Retornamos el DataFrame ya recortado con las condiciones activas
     return df[mascara_combinada]
 
+def boton_exportar(df_exportar, key_prefix):
+    """Ejercicio 2.D: Genera el archivo CSV en memoria y dibuja el botón de descarga."""
+    
+    #Recupero el nombre del dataset desde la memoria global
+    dataset_actual = st.session_state.get("dataset_actual", "Dataset")
+    
+    #Genero la fecha y hora actual para el nombre del archivo
+    fecha_descarga = pd.Timestamp.now().strftime("%Y-%m-%d_%H-%M-%S")
+    nombre_archivo = f"{dataset_actual}_{fecha_descarga}.csv"
+
+    #Convierto el DataFrame a CSV (en bytes para Streamlit)
+    csv_data = df_exportar.to_csv(index=False).encode('utf-8')
+
+    #Dibujo el botón
+    st.download_button(
+        label= "Exportar resultados (CSV)",
+        data=csv_data,
+        file_name=nombre_archivo,
+        mime='text/csv',
+        key=f"exportar_{key_prefix}" 
+    )
+
 def renderizar_resultados_paginados(df_filtrado, key_prefix):
     """Ejercicio 2.C: Renderiza una tabla interactiva con paginación, 
     columnas relevantes y vista de detalle."""
@@ -130,10 +147,18 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
     if df_filtrado.empty:
         st.warning("No se encontraron registros que coincidan con la búsqueda.")
         return
+    
+    #Uso columnas para alinear el mensaje de éxito y el botón de descarga
+    col_info, col_descarga = st.columns([2, 1])
+    
+    with col_info:
+        st.success(f"Se encontraron {df_filtrado.shape[0]} registros.")
+        
+    with col_descarga:
+        #LLamo funcion del 2)D)
+        boton_exportar(df_filtrado, key_prefix)
 
-    #Indicador de cantidad de registros
-    st.success(f"Se encontraron {df_filtrado.shape[0]} registros.")
-
+    #Ejercicio 2)c)
     #Selección de columnas relevantes
     columnas_preferidas = [
         "occurrenceID", "scientificName", "eventDate", "recordedBy",

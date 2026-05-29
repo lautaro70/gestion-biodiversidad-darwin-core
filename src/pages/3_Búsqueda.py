@@ -27,10 +27,6 @@ try:
     #Llamo a la segunda función modular
     df_filtrado_combinado = renderizar_filtros_dwc(df)
     
-    # Renderizamos el resultado del 2.B
-    st.success(f"Se encontraron {df_filtrado_combinado.shape[0]} registros aplicando estos filtros combinados.")
-    st.dataframe(df_filtrado_combinado)
-
     # Le pasamos "comb" como prefijo
     st.markdown("### Ejercicio 2.C: Resultados paginado")
     renderizar_resultados_paginados(df_filtrado_combinado, key_prefix="comb")
