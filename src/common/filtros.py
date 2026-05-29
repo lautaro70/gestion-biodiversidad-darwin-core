@@ -213,3 +213,52 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
             st.json(detalle_registro.dropna().to_dict())
     else:
         st.info("El dataset no posee la columna 'occurrenceID' para identificar el detalle.")
+    #ejercicio 2)E): Llamo a la función modular
+    resumen_estadistico(df_filtrado)
+
+def resumen_estadistico(df_filtrado):
+    """Ejercicio 2.E: Calcula y renderiza un resumen estadístico del subconjunto filtrado."""
+    st.divider()
+    st.markdown("Resumen Estadístico del Filtrado")
+
+    #Calculo Especies Únicas
+    if "scientificName" in df_filtrado.columns:
+        especies_unicas = df_filtrado["scientificName"].nunique(dropna=True)
+    else:
+        especies_unicas = 0
+
+    #Calculo Países
+    col_pais = None
+    if "country" in df_filtrado.columns:
+        col_pais = "country"
+    elif "countryCode" in df_filtrado.columns:
+        col_pais = "countryCode"
+        
+    paises_unicos = df_filtrado[col_pais].nunique(dropna=True) if col_pais else 0
+
+    #Calculo Provincias/Localidades
+    col_prov = None
+    if "stateProvince" in df_filtrado.columns:
+        col_prov = "stateProvince"
+    elif "locality" in df_filtrado.columns:
+        col_prov = "locality"
+        
+    provincias_unicas = df_filtrado[col_prov].nunique(dropna=True) if col_prov else 0
+
+    #Calculo Observadores
+    if "recordedBy" in df_filtrado.columns:
+        observadores_unicos = df_filtrado["recordedBy"].nunique(dropna=True)
+    else:
+        observadores_unicos = 0
+
+    #Dibujo los 4 números alineados usando st.columns y st.metric
+    col_res1, col_res2, col_res3, col_res4 = st.columns(4)
+    
+    with col_res1:
+        st.metric(label="Especies Únicas", value=especies_unicas)
+    with col_res2:
+        st.metric(label="Países Representados", value=paises_unicos)
+    with col_res3:
+        st.metric(label="Provincias/Localidades", value=provincias_unicas)
+    with col_res4:
+        st.metric(label="Observadores", value=observadores_unicos)
