@@ -1,6 +1,6 @@
 import streamlit as st
 from common.barra_lateral import renderizar_barra_lateral
-from core.ejercicio3visualizacion import obtener_datos_barras 
+from core.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas
 import matplotlib.pyplot as plt
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)
@@ -54,3 +54,7 @@ if "df_actual" in st.session_state and st.session_state["df_actual"] is not None
 else:
     # Si entran a la página sin haber elegido un archivo en el sidebar 
     st.warning("Por favor, seleccioná un dataset en la barra lateral para empezar a visualizar los gráficos.")
+
+
+    #-----------3b
+
