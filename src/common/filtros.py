@@ -161,6 +161,9 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
 
     st.markdown("#### Resultados (Vista Paginada)")
     
+    #Reservamos un espacio vacío para la tabla ARRIBA
+    contenedor_tabla = st.empty()
+
     #Lógica de Paginación Matemática
     tamano_pagina = 15
     total_registros = len(df_filtrado)
@@ -185,7 +188,7 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
     df_pagina = df_filtrado[cols_a_mostrar].iloc[inicio:fin]
 
     #Tabla interactiva para el ordenamiento
-    st.dataframe(df_pagina)
+    contenedor_tabla.dataframe(df_pagina)
 
     #Acceso al detalle completo de un registro
     st.markdown("#### Ver Detalle Completo")
