@@ -86,6 +86,8 @@ def renderizar_filtros_dwc(df):
     fechas_validas = False
 
     if col_fecha in df.columns:
+        # Desfragmentamos el DataFrame antes de agregar una columna nueva
+        df = df.copy()
         #errors para que no se frene si encuentra un dato vacío o cualquier error convirtiendolo a nulo
         df['fecha_dt'] = pd.to_datetime(df[col_fecha], errors='coerce')
         if not df['fecha_dt'].isna().all():
@@ -223,10 +225,10 @@ def resumen_estadistico(df_filtrado):
         especies_unicas = 0
 
     #Calculo Países
-    paises_unicos = df_filtrado["country"].nunique(dropna=True) if "country" else 0
+    paises_unicos = df_filtrado["country"].nunique(dropna=True) if "country" in df_filtrado.columns else 0
 
     #Calculo Provincias/Localidades
-    provincias_unicas = df_filtrado["stateProvince"].nunique(dropna=True) if "stateProvince" else 0
+    provincias_unicas = df_filtrado["stateProvince"].nunique(dropna=True) if "stateProvince" in df_filtrado.columns else 0
 
     #Calculo Observadores
     if "recordedBy" in df_filtrado.columns:

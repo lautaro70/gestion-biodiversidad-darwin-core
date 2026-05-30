@@ -15,7 +15,7 @@ dataset_seleccionado = st.session_state["dataset_actual"]
 
 try:
     # Cargo el DataFrame completo una sola vez
-    df = cargar_dataset_procesado(dataset_seleccionado)
+    df = cargar_dataset_procesado(dataset_seleccionado).copy()
     
     # A. Arreglar Provincias (El problema de XenoCanto)
     if "stateProvince" not in df.columns and "locality" in df.columns:
