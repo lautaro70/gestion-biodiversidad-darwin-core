@@ -70,3 +70,14 @@ def obtener_datos_lineas(df, anio_inicio, anio_fin):
     total_excluidos = excluidos_nulos + excluidos_invalidos
     
     return resultado_serie, total_excluidos
+
+#-----------------Ejercicio 3c--------------------
+
+
+def obtener_datos_taxonomia(df, columna_taxonomica):
+
+    #Segun la categoria elegida (familia,clase,orden) contamos cuantos registros hay
+
+    conteo_taxo = df[columna_taxonomica].value_counts()
+    
+    return conteo_taxo
