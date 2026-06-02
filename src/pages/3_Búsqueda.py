@@ -52,5 +52,14 @@ try:
     st.markdown("### Ejercicio 2.C: Resultados paginado")
     renderizar_resultados_paginados(df_filtrado_combinado, key_prefix="comb")
 
+
+    #Boton Ver ficha del punto 6a
+    if not df_filtrado_combinado.empty:
+
+        if st.button("Ver ficha"):
+            st.session_state["resultados_busqueda"] = (df_filtrado_combinado.copy())
+            st.switch_page("pages/7_Ficha_de_datos.py")
+    #termina el 6a
+
 except Exception as e:
     st.error(f"Error al cargar o procesar el dataset '{dataset_seleccionado}'. Detalle: {e}")
