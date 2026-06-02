@@ -24,11 +24,6 @@ def renderizar_busqueda_libre(df):
         # Aplico la máscara al DataFrame original
         df_filtrado = df[mascara]
         
-        # Muestro la cantidad de coincidencias usando .shape[0]
-        st.info(f"Se encontraron {df_filtrado.shape[0]} registros coincidentes.")
-        
-        # Muestro el resultado como tabla interactiva
-        st.dataframe(df_filtrado)
         #LA FUNCIÓN DEL 2.C
         # Le paso "libre" como prefijo para que las variables internas no choquen
         st.markdown("#### Resultados (Vista Paginada)")
@@ -42,7 +37,9 @@ def renderizar_filtros_dwc(df):
     Retorna el DataFrame filtrado."""
     MAPEO_DWC = {
         "Nombre científico": "scientificName",
+        "Provincia": "stateProvince",
         "Observador": "recordedBy",
+        "Pais": "country",
         "Fecha": "eventDate"}
 
     #Máscara base
@@ -58,12 +55,7 @@ def renderizar_filtros_dwc(df):
             mascara_combinada &= df[col_nc].isin(filtro_nc)
 
     # --- Filtro: País ---
-    # Buscamos si existe "country" o si existe "countryCode"
-    col_pais = None
-    if "country" in df.columns:
-        col_pais = "country"
-    elif "countryCode" in df.columns:
-        col_pais = "countryCode"
+    col_pais = MAPEO_DWC["Pais"]
 
     if col_pais in df.columns:
         opciones_pais = df[col_pais].dropna().unique().tolist()
@@ -74,12 +66,7 @@ def renderizar_filtros_dwc(df):
     col3, col4 = st.columns(2)
 
     # --- Filtro: Provincia ---
-    # Buscamos si existe "stateProvince" o si usamos "locality" como plan B
-    col_prov = None
-    if "stateProvince" in df.columns:
-        col_prov = "stateProvince"
-    elif "locality" in df.columns:
-        col_prov = "locality"
+    col_prov = MAPEO_DWC["Provincia"]
 
     if col_prov in df.columns:
         opciones_prov = df[col_prov].dropna().unique().tolist()
@@ -99,6 +86,8 @@ def renderizar_filtros_dwc(df):
     fechas_validas = False
 
     if col_fecha in df.columns:
+        # Desfragmentamos el DataFrame antes de agregar una columna nueva
+        df = df.copy()
         #errors para que no se frene si encuentra un dato vacío o cualquier error convirtiendolo a nulo
         df['fecha_dt'] = pd.to_datetime(df[col_fecha], errors='coerce')
         if not df['fecha_dt'].isna().all():
@@ -123,6 +112,28 @@ def renderizar_filtros_dwc(df):
     # Retornamos el DataFrame ya recortado con las condiciones activas
     return df[mascara_combinada]
 
+def boton_exportar(df_exportar, key_prefix):
+    """Ejercicio 2.D: Genera el archivo CSV en memoria y dibuja el botón de descarga."""
+    
+    #Recupero el nombre del dataset desde la memoria global
+    dataset_actual = st.session_state.get("dataset_actual", "Dataset")
+    
+    #Genero la fecha y hora actual para el nombre del archivo
+    fecha_descarga = pd.Timestamp.now().strftime("%Y-%m-%d_%H-%M-%S")
+    nombre_archivo = f"{dataset_actual}_{fecha_descarga}.csv"
+
+    #Convierto el DataFrame a CSV (en bytes para Streamlit)
+    csv_data = df_exportar.to_csv(index=False).encode('utf-8')
+
+    #Dibujo el botón
+    st.download_button(
+        label= "Exportar resultados (CSV)",
+        data=csv_data,
+        file_name=nombre_archivo,
+        mime='text/csv',
+        key=f"exportar_{key_prefix}" 
+    )
+
 def renderizar_resultados_paginados(df_filtrado, key_prefix):
     """Ejercicio 2.C: Renderiza una tabla interactiva con paginación, 
     columnas relevantes y vista de detalle."""
@@ -130,10 +141,18 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
     if df_filtrado.empty:
         st.warning("No se encontraron registros que coincidan con la búsqueda.")
         return
+    
+    #Uso columnas para alinear el mensaje de éxito y el botón de descarga
+    col_info, col_descarga = st.columns([2, 1])
+    
+    with col_info:
+        st.success(f"Se encontraron {df_filtrado.shape[0]} registros.")
+        
+    with col_descarga:
+        #LLamo funcion del 2)D)
+        boton_exportar(df_filtrado, key_prefix)
 
-    #Indicador de cantidad de registros
-    st.success(f"Se encontraron {df_filtrado.shape[0]} registros.")
-
+    #Ejercicio 2)c)
     #Selección de columnas relevantes
     columnas_preferidas = [
         "occurrenceID", "scientificName", "eventDate", "recordedBy",
@@ -144,6 +163,9 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
 
     st.markdown("#### Resultados (Vista Paginada)")
     
+    #Reservamos un espacio vacío para la tabla ARRIBA
+    contenedor_tabla = st.empty()
+
     #Lógica de Paginación Matemática
     tamano_pagina = 15
     total_registros = len(df_filtrado)
@@ -168,7 +190,7 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
     df_pagina = df_filtrado[cols_a_mostrar].iloc[inicio:fin]
 
     #Tabla interactiva para el ordenamiento
-    st.dataframe(df_pagina)
+    contenedor_tabla.dataframe(df_pagina)
 
     #Acceso al detalle completo de un registro
     st.markdown("#### Ver Detalle Completo")
@@ -188,3 +210,40 @@ def renderizar_resultados_paginados(df_filtrado, key_prefix):
             st.json(detalle_registro.dropna().to_dict())
     else:
         st.info("El dataset no posee la columna 'occurrenceID' para identificar el detalle.")
+    #ejercicio 2)E): Llamo a la función modular
+    resumen_estadistico(df_filtrado)
+
+def resumen_estadistico(df_filtrado):
+    """Ejercicio 2.E: Calcula y renderiza un resumen estadístico del subconjunto filtrado."""
+    st.divider()
+    st.markdown("Resumen Estadístico del Filtrado")
+
+    #Calculo Especies Únicas
+    if "scientificName" in df_filtrado.columns:
+        especies_unicas = df_filtrado["scientificName"].nunique(dropna=True)
+    else:
+        especies_unicas = 0
+
+    #Calculo Países
+    paises_unicos = df_filtrado["country"].nunique(dropna=True) if "country" in df_filtrado.columns else 0
+
+    #Calculo Provincias/Localidades
+    provincias_unicas = df_filtrado["stateProvince"].nunique(dropna=True) if "stateProvince" in df_filtrado.columns else 0
+
+    #Calculo Observadores
+    if "recordedBy" in df_filtrado.columns:
+        observadores_unicos = df_filtrado["recordedBy"].nunique(dropna=True)
+    else:
+        observadores_unicos = 0
+
+    #Dibujo los 4 números alineados usando st.columns y st.metric
+    col_res1, col_res2, col_res3, col_res4 = st.columns(4)
+    
+    with col_res1:
+        st.metric(label="Especies Únicas", value=especies_unicas)
+    with col_res2:
+        st.metric(label="Países Representados", value=paises_unicos)
+    with col_res3:
+        st.metric(label="Provincias/Localidades", value=provincias_unicas)
+    with col_res4:
+        st.metric(label="Observadores", value=observadores_unicos)

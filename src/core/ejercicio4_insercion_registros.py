@@ -73,14 +73,20 @@ def validar_registro(
 
     # --- 1. Validar coordenadas (3a y 3b) ---
     valor_latitud = registro.get("decimalLatitude")
-    valor_longitud = registro.get("decimalLongitude")
+    if valor_latitud is None:
+        valor_latitud = registro.get("latitudeDecimal")
 
-    coordenadas_validas, errores_coordenadas = validar_par_coordenadas(
+    valor_longitud = registro.get("decimalLongitude")
+    if valor_longitud is None:
+        valor_longitud = registro.get("longitudeDecimal")
+    
+    if valor_latitud is not None or valor_longitud is not None:
+        coordenadas_validas, errores_coordenadas = validar_par_coordenadas(
         valor_latitud, 
         valor_longitud
-    )
-    if not coordenadas_validas:
-        errores.extend(errores_coordenadas)
+        )
+        if not coordenadas_validas:
+            errores.extend(errores_coordenadas)
 
     # --- 2. Validar fechas (3c) ---
     columnas_fecha = {
@@ -434,3 +440,74 @@ def insertar_multiples_registros(dataset: str) -> str:
     registrar_operacion_en_log(mensaje, "INSERT")
 
     return f"{len(nuevas_filas)} registros guardados."
+
+
+# FUNCIÓN PARA STREAMLIT (Ejercicio 4A de la Parte 2)
+# =========================================================
+
+def insertar_registro_desde_diccionario(dataset: str, registro: dict) -> tuple[bool, str]:
+    """
+    Inserta un registro en el dataset a partir de un diccionario (para poder ser usada desde Streamlit).
+    
+    Recibe:
+    - dataset: nombre del dataset 
+    - registro: diccionario con los valores a insertar
+    
+    Devuelve:
+    - (True, mensaje_exito) si se insertó correctamente
+    - (False, mensaje_error) si hubo un error
+    """
+    
+    from pathlib import Path
+    import csv
+    from common.dataset_utils import obtener_ruta_y_separador
+    
+
+    es_valido, errores = validar_registro(dataset, registro)
+    
+    if not es_valido:
+        return False, f"Error de validación: {', '.join(errores)}"
+    
+    
+    fila = registro_a_fila(dataset, registro)
+    
+    if isinstance(fila, str):  # Si devolvió un error
+        return False, fila
+    
+    
+    ruta_origen, separador = obtener_ruta_y_separador(dataset)
+    
+    if not ruta_origen:
+        return False, f"Dataset '{dataset}' no reconocido"
+    
+    
+    carpeta_destino = Path(__file__).parent.parent.parent / 'processed_datasets' / dataset
+    carpeta_destino.mkdir(parents=True, exist_ok=True)
+    ruta_destino = carpeta_destino / f"{dataset}_processed.csv"
+    
+    
+    try:
+        if ruta_destino.exists():
+            with open(ruta_destino, 'a', encoding='utf-8', newline='') as archivo:
+                escritor = csv.writer(archivo, delimiter=separador)
+                escritor.writerow(fila)
+        else:
+            with open(ruta_origen, 'r', encoding='utf-8') as origen, \
+                 open(ruta_destino, 'w', encoding='utf-8', newline='') as destino:
+                
+                lector = csv.reader(origen, delimiter=separador)
+                escritor = csv.writer(destino, delimiter=separador)
+                
+                for fila_existente in lector:
+                    escritor.writerow(fila_existente)
+                
+                escritor.writerow(fila)
+        
+        # Registrar en el log
+        from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
+        registrar_operacion_en_log(f"Inserción desde Streamlit en {dataset}", "INSERT")
+        
+        return True, f"Registro insertado correctamente en {dataset}"
+        
+    except Exception as error:
+        return False, f"Error al guardar: {str(error)}"
