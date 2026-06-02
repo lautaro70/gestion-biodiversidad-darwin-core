@@ -1,6 +1,6 @@
 import streamlit as st
 from common.barra_lateral import renderizar_barra_lateral
-from core.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas
+from core.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas,obtener_datos_taxonomia
 import matplotlib.pyplot as plt
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)
@@ -124,3 +124,58 @@ else:
             
     else:
         st.info("No se encontraron fechas válidas en la columna 'eventDate' para armar la línea de tiempo.")
+
+
+
+#----------------Grafico 3c------------------------------
+
+    st.markdown("----------")
+    st.header("Distribución por Nivel Taxonómico (3C)")
+
+    # Hacemos un diccionario con las opciones de nivel taxonomico que puede elegir el usuario 
+    opciones_taxo = {
+        "Clase": "class",
+        "Orden": "order",
+        "Familia": "family"
+    }
+
+    # Aca es donde ponemos visualmente en streamlit las opciones que se pueden elegir
+    seleccion_usuario = st.selectbox(
+        "Seleccioná el nivel taxonómico para analizar la distribución:",
+        options=list(opciones_taxo.keys())
+    )
+
+    columna_elegida = opciones_taxo[seleccion_usuario] # Agarramos el valor de la categoria elegida
+
+    datos_taxo = obtener_datos_taxonomia(df, columna_elegida) # Llamada a la funcion
+
+    # Comenzamos con el armado del grafico
+    if not datos_taxo.empty:
+        top_datos = datos_taxo.head(15) # Ponemos solo 15 elementos para que no quede gigante el grafico
+
+        fig3, ax3 = plt.subplots(figsize=(10, 6)) # Creamos el grafico de barras
+
+        # Dibujamos las barras y les damos color
+        ax3.bar(top_datos.index, top_datos.values, color='#45aaf2', edgecolor='black')
+        
+        # Ponemos el titulo junto con sus etiquetas
+        ax3.set_title(f"Top 15 - Distribución de Registros por {seleccion_usuario}", fontsize=14, fontweight='bold')
+        ax3.set_xlabel(seleccion_usuario, fontsize=12)
+        ax3.set_ylabel("Cantidad de Registros", fontsize=12)
+
+        # Rotamos las etiquetas en 45 para que no se superpongan
+        plt.xticks(rotation=45, ha='right')
+            
+        plt.tight_layout()
+
+        # Mostramos en streamlit
+        st.pyplot(fig3)
+
+        # Aca avisamos que solo mostramos las primeras 15 
+        if len(datos_taxo) > 15:
+            st.info(f"ℹ️ Mostrando las 15 categorías más frecuentes de un total de {len(datos_taxo)} encontradas.")
+                
+    else:
+         st.info(f"No se encontraron datos para el nivel taxonómico {seleccion_usuario}.")
+    
+    
