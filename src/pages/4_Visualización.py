@@ -15,7 +15,7 @@ if "df_actual" in st.session_state and st.session_state["df_actual"] is not None
     df = st.session_state["df_actual"]
     
     st.markdown("---")
-    st.header("Distribución Geográfica de Registros")
+    st.header("Distribución Geográfica de Registros(3A)")
     
     # Por defecto ponemos 10 elementos 
     top_n = st.slider("Seleccioná cuántos elementos principales mostrar (Top N):", min_value=1, max_value=20, value=10)
@@ -56,5 +56,71 @@ else:
     st.warning("Por favor, seleccioná un dataset en la barra lateral para empezar a visualizar los gráficos.")
 
 
-    #-----------3b
+    #-----------3b------------------
 
+
+    st.markdown("--------")
+    st.header("Evolución temporal de registros por anio(3B)")
+
+    min_anio_ds = None
+    max_anio_ds = None
+    
+    for celda in df['eventDate']: #Buscamos el anio maximo y minimo para poder hacer bien el st.slider
+        if not pd.isna(celda):
+            try:
+                anio_num = int(str(celda)[:4])
+
+                if min_anio_ds is None or anio_num < min_anio_ds:
+                    min_anio_ds = anio_num
+
+                if max_anio_ds is None or anio_num > max_anio_ds:
+                    max_anio_ds = anio_num
+            except:
+                continue #Si se rompe que siga con la siguiente fecha
+
+
+    #Chequeamos que los anios tengan valor
+    if min_anio_ds is not None and max_anio_ds is not None:
+        
+        if min_anio_ds == max_anio_ds:
+            min_anio_ds -= 1
+
+        #Armamos el slider 
+        rango_anios = st.slider(
+            "Seleccioná el rango de años a analizar:",
+            min_value=min_anio_ds,
+            max_value=max_anio_ds,
+            value=(min_anio_ds, max_anio_ds)
+        )
+
+        anio_ini, anio_fin = rango_anios #Este seria el rango elegido por el usuario
+#Llamamos a la funcion
+        datos_lineas, excluidos = obtener_datos_lineas(df, anio_ini, anio_fin)
+
+        #Y ahora si arrancamos con el grafico
+
+        if not datos_lineas.empty:
+
+            fig2, ax2 = plt.subplots(figsize=(10, 5))
+            #hacemos la linea con marcadore redondos
+            ax2.plot(datos_lineas.index, datos_lineas.values, color='#e056fd', marker='o', linestyle='-', linewidth=2)
+            #Titulos de los ejes 
+            ax2.set_title(f"Cantidad de Avistamientos por Año ({anio_ini} - {anio_fin})", fontsize=14, fontweight='bold')
+            ax2.set_xlabel("Año de la Observación", fontsize=12)
+            ax2.set_ylabel("Cantidad de Registros", fontsize=12)
+
+
+            #El eje x = integer (para que sean numeros)
+            ax2.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+            plt.tight_layout()
+            st.pyplot(fig2)
+
+            #Devoluciones 
+
+            st.info(f"ℹ️ Se excluyeron {excluidos} registros por presentar fechas nulas o inválidas.")
+            
+        else:
+            st.info("No hay registros en el rango de años seleccionado.")
+            
+    else:
+        st.info("No se encontraron fechas válidas en la columna 'eventDate' para armar la línea de tiempo.")
