@@ -1,6 +1,6 @@
 import streamlit as st
-from common.barra_lateral import renderizar_barra_lateral
-from core.carga_datasets import cargar_dataset_procesado
+from web.barra_lateral import renderizar_barra_lateral
+from web.carga_datasets import cargar_dataset_procesado
 from core.ejercicio4_insercion_registros import insertar_registro_desde_diccionario
 from core.ejercicio5_actualizacion_registros import buscar_registros
 

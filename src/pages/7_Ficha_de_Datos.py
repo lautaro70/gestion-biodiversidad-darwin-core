@@ -1,5 +1,5 @@
 import streamlit as st
-from common.barra_lateral import renderizar_barra_lateral
+from web.barra_lateral import renderizar_barra_lateral
 
 
 st.set_page_config(page_title="Ficha de datos")

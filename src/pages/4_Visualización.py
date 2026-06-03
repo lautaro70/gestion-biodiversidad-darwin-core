@@ -1,6 +1,6 @@
 import streamlit as st
-from common.barra_lateral import renderizar_barra_lateral
-from core.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas,obtener_datos_taxonomia
+from web.barra_lateral import renderizar_barra_lateral
+from web.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas,obtener_datos_taxonomia
 import matplotlib.pyplot as plt
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)

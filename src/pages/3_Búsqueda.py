@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-from common.barra_lateral import renderizar_barra_lateral
-from core.carga_datasets import cargar_dataset_procesado
-from common.filtros import renderizar_busqueda_libre, renderizar_filtros_dwc, renderizar_resultados_paginados
+from web.barra_lateral import renderizar_barra_lateral
+from web.carga_datasets import cargar_dataset_procesado
+from web.filtros import renderizar_busqueda_libre, renderizar_filtros_dwc, renderizar_resultados_paginados
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)
 renderizar_barra_lateral()
