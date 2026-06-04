@@ -8,10 +8,10 @@ def obtener_datos_barras(df, top_n):
     paises_unicos = df['country'].dropna().unique() if 'country' in df else []
 
     if len(paises_unicos) > 1: 
-        # Si hay más de un país lo guardamos en la variable (Lleva un tabulador extra)
+        # Si hay más de un país lo guardamos en la variable 
         columna_agrupar = 'country'
     else: 
-        # Y sino los guardamos en la provincia o localidad si no existe la primera S
+        # Y sino los guardamos en la provincia o localidad si no existe la primera 
         columna_agrupar = 'stateProvince' if 'stateProvince' in df else 'locality'
 
     
@@ -26,7 +26,7 @@ def obtener_datos_lineas(df, anio_inicio, anio_fin):
     # Creamos un diccionario donde los anios sean la clave y la cantidad de registros que hay en ellos el valor
     diccionario_anios = {}
     
-    # Inicializamos contadores para registrar cuántos datos se descartan (Requisito PDF)
+    # Inicializamos contadores para registrar cuántos datos se descartan 
     excluidos_nulos = 0
     excluidos_invalidos = 0
 
@@ -56,17 +56,28 @@ def obtener_datos_lineas(df, anio_inicio, anio_fin):
             excluidos_invalidos += 1
             continue
         
-    # Ordenamos las tuplas por su clave (el anio) fuera del bucle for
+    # Ordenamos las tuplas por su clave (el anio) 
     lista_ordenada = sorted(diccionario_anios.items())
         
     # Separamos los anios finales por un lado y los conteos por otro
     anios_finales = [elemento[0] for elemento in lista_ordenada]
     conteos_finales = [elemento[1] for elemento in lista_ordenada]
 
-    # Lo metemos en una Serie de Pandas para que se conecte idéntico con tu archivo de visualización
+    # Lo metemos en una Serie de Pandas para que se conecte con nuestro archivo
     resultado_serie = pd.Series(conteos_finales, index=anios_finales)
     
     # Calculamos el total de registros que no entraron en el gráfico
     total_excluidos = excluidos_nulos + excluidos_invalidos
     
     return resultado_serie, total_excluidos
+
+#-----------------Ejercicio 3c--------------------
+
+
+def obtener_datos_taxonomia(df, columna_taxonomica):
+
+    #Segun la categoria elegida (familia,clase,orden) contamos cuantos registros hay
+
+    conteo_taxo = df[columna_taxonomica].value_counts()
+    
+    return conteo_taxo

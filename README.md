@@ -14,7 +14,7 @@ El objetivo principal es resolver los problemas típicos de los datos provenient
 *   **Validación Crítica de Calidad**: Control estricto de coordenadas geográficas globales y cotas regionales específicas para América del Sur, detección de duplicados e inconsistencias temporales.
 *   **Persistencia Inmutable**: Los archivos originales en formato crudo nunca se modifican; todas las operaciones de saneamiento generan nuevas versiones limpias orientadas a la producción.
 *   **Auditoría (Logging)**: Registro detallado y cronológico de cada transacción para asegurar la trazabilidad del sistema.
-*   **Interfaz Interactiva**: Un panel de control web dinámico que expone los reportes estadísticos y el estado transaccional.
+*   **Interfaz Web Interactiva (Etapa 2)**: Aplicación desarrollada en Streamlit que integra los datos procesados, ofreciendo dashboards estadísticos, mapas interactivos y un sistema CRUD (Crear, Leer, Actualizar, Borrar) para la gestión de datos en tiempo real.
 
 ## Descarga de Datasets
 Para replicar los análisis y ejecutar la plataforma, es necesario descargar los conjuntos de datos oficiales provistos por la cátedra, los cuales corresponden a muestras adaptadas de las siguientes fuentes:
@@ -102,8 +102,20 @@ streamlit run src/Inicio.py
 
 Una vez ejecutado, se abrirá automáticamente una pestaña en su navegador (generalmente en http://localhost:8501) donde podrá navegar por las páginas de:
 
-**Inicio: Información del proyecto y Darwin Core.**
-**Estado del sistema: Visualización de los logs de logs/operations.log.**
+El sistema cuenta con una barra lateral (Sidebar) de configuración que permite seleccionar el dataset a utilizar, manteniendo su estado persistente entre páginas y mostrando métricas en tiempo real de la selección. La aplicación se divide en las siguientes secciones:  
+    * **Inicio (P1)** *: Información general del proyecto, el grupo y el estándar Darwin Core.
+    
+    * **Estado del Sistema (P2)** *: Lector avanzado de auditoría (operations.log) con métricas resumidas y filtros interactivos por tipo de operación (INSERT, UPDATE, DELETE, ERROR) y rango de fechas.  
+    
+    * **Búsqueda (P3)** *: Motor de búsqueda con filtros combinables (texto libre, nombre científico, observador, país, provincia y rango de fechas) . Los resultados se presentan en una tabla dinámica con paginación, resúmenes estadísticos del filtrado y la opción de exportar el subconjunto a CSV.  
+    
+    * **Visualización (P4)** *: Dashboards estadísticos que incluyen gráficos de distribución por país/provincia, series temporales por año de observación, distribución por nivel taxonómico y análisis de completitud (valores nulos) de las columnas.  
+    
+    * **Gestión de Registros (P5)** *: Interfaz transaccional que permite insertar nuevos registros, buscar ocurrencias por identificador para actualizarlas, o eliminar datos mediante condiciones lógicas (==, >, <, etc.). Todas las operaciones validan los datos en vivo y alteran el dataset procesado.  
+    
+    * **Exploración de Datasets (P6)** *: Vista global e independiente del sidebar que compara todos los datasets del sistema. Permite analizar el peso en disco, el porcentaje de coordenadas válidas y renderizar directamente en la web los manuales creados en formato Markdown.  
+    
+    * **Ficha de Datos (P7)** *: Accesible dinámicamente desde la página de Búsqueda. Plotea las ocurrencias en un mapa geográfico interactivo (Folium) y expone una ficha técnica con la evidencia multimedia asociada a cada registro, como pistas de audio para Xeno-Canto y fotografías para iNaturalist. 
 
 ### Estructura del Proyecto:
 * **documentation/**: Análisis y descripción de los datasets originales (Ejercicio 1).
@@ -116,6 +128,7 @@ Una vez ejecutado, se abrirá automáticamente una pestaña en su navegador (gen
     * **core/**: Lógica de procesamiento y validaciones.
     * **common/**: Funciones auxiliares y constantes.
     * **notebooks/**: Desarrollo y pruebas de los ejercicios en formato .ipynb.
+    **web/**: (Etapa 2). Funciones relacionadas a la página web
 * **requirements.txt**: Lista de bibliotecas necesarias para el proyecto.
 
 ### Configuración Centralizada y Rutas (DRY)

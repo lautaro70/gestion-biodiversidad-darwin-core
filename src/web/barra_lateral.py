@@ -1,12 +1,22 @@
-# src/common/sidebar.py
 import streamlit as st
 from common.constants import PROCESSED_DATASETS
 import pandas as pd
-from core.carga_datasets import cargar_dataset_procesado
+from web.carga_datasets import cargar_dataset_procesado
 
 def renderizar_barra_lateral():
     """Dibuja el selector y las métricas en tiempo real.
     Resuelve el lag en la misma página mediante el patrón de restauración de keys."""
+
+    #6a CSS para que no muestre la ultima pagina en el sidebar
+    st.markdown("""
+    <style>
+        [data-testid="stSidebarNav"] ul li:last-child {
+            display: none;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    #------------
+    
     # .sidebar es el modificador de diseño de Streamlit para enviar componentes a la barra lateral.
     st.sidebar.title("Configuración del Sistema")
     
