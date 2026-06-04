@@ -2,6 +2,7 @@ import streamlit as st
 from web.barra_lateral import renderizar_barra_lateral
 from web.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas, obtener_datos_taxonomia
 import matplotlib.pyplot as plt
+from core.ejercicio2_lectura_dataset import porcentaje_nulos
 import pandas as pd
 import os
 from web.carga_datasets import cargar_dataset_procesado
@@ -129,6 +130,98 @@ if df is not None:
     else:
          st.info(f"No se encontraron datos para el nivel taxonómico {seleccion_usuario}.")
 
+#-----------------Punto 3d-------------------
+
+    st.markdown("--------")
+    st.header("Nivel de completitud por columna (3D)")
+
+    # Llamamos a la función del 2f pasándole el nombre del dataset seleccionado
+    diccionario_nulos = porcentaje_nulos(nombre_dataset)
+
+    # Verificamos que la función haya devuelto un diccionario válido y no un error
+    if isinstance(diccionario_nulos, dict) and diccionario_nulos:
+
+        diccionario_completitud = {
+            columna: 100 - porcentaje_nulo # Hacemos esto porque la funcion calculaba el porcentaje de nulos
+            for columna, porcentaje_nulo in diccionario_nulos.items() #Y nosotros queremos los no nulos
+        }
+
+        # Ordenamos las columnas de mayor a menor completitud
+        datos_ordenados = sorted(diccionario_completitud.items(), key=lambda x: x[1], reverse=False)
+
+        # --- amontonamiento
+        # Como hay más de 200 columnas, si graficamos todas se superpone todo el texto.
+        # Filtramos para quedarnos solo con las columnas que SÍ tienen datos (completitud > 0)
+        datos_con_datos = [elemento for elemento in datos_ordenados if elemento[1] > 0]
+        
+        # Si aun así son demasiadas, nos quedamos con las 30 más representativas para que sea legible
+        if len(datos_con_datos) > 30:
+            datos_grafico = datos_con_datos[-30:] # Agarramos las 30 con mayor completitud
+            subtitulo_grafico = "(Top 30 columnas más completas)"
+        else:
+            datos_grafico = datos_con_datos
+            subtitulo_grafico = "(Columnas con datos presentes)"
+
+        # Separamos los nombres de las columnas por un lado y los porcentajes por el otro
+        columnas_finales = [elemento[0] for elemento in datos_grafico]
+        porcentajes_finales = [elemento[1] for elemento in datos_grafico]
+
+        # Calculamos una altura dinámica proporcional a la cantidad de barras a mostrar
+        altura_figura = max(6, len(columnas_finales) * 0.4)
+
+        # Creamos la figura de Matplotlib dándole un tamaño vertical generoso
+        fig3, ax3 = plt.subplots(figsize=(10, altura_figura))
+        
+        # Dibujamos barras horizontales con barh() agregandole color celeste/azul
+        barras = ax3.barh(columnas_finales, porcentajes_finales, color='#00a8ff', edgecolor='black')
+
+        # Ponemos los títulos del gráfico y de los ejes
+        ax3.set_title(f"Porcentaje de Completitud por Columna\n{subtitulo_grafico}", fontsize=14, fontweight='bold')
+        ax3.set_xlabel("Porcentaje de Datos Presentes (%)", fontsize=12)
+        ax3.set_ylabel("Columnas del Dataset", fontsize=12)
+
+        # Modificamos el tamaño de la letra de las columnas para que no se choque
+        ax3.tick_params(axis='y', labelsize=10)
+
+        # Forzamos el límite del eje X para que vaya siempre de 0 a 100%
+        ax3.set_xlim(0, 115) # Le damos hasta 115 para que el texto del % no quede cortado a la derecha
+
+        # Le agregamos una cuadrícula de fondo  solo en el eje X para facilitar la lectura
+        ax3.grid(axis='x', linestyle='--', alpha=0.7)
+
+        # Agregamos el texto con el porcentaje exacto al final de cada barra 
+        for barra in barras:
+            ancho_barra = barra.get_width()
+            ax3.text(
+                ancho_barra + 1, # Posición un poquito a la derecha del final de la barra
+                barra.get_y() + barra.get_height()/2, # Centrado verticalmente en la barra
+                f'{ancho_barra:.1f}%', # Texto con un decimal
+                va='center', 
+                ha='left', 
+                fontsize=9, 
+                fontweight='bold'
+            )
+
+        plt.tight_layout()
+        st.pyplot(fig3) # Mostramos el gráfico en la web de Streamlit
+        
+        st.info("ℹ️ El gráfico muestra las columnas que contienen datos válidos, ordenadas por su nivel de llenado.")
+
+        
+    else:
+        st.error(f"No se pudieron calcular los nulos: {diccionario_nulos}")
+
+
+
+
+
+
+
+
+
+
 # ---------- Si no se pudo cargar el dataset ----------
+
+
 else:
     st.warning("Por favor, seleccioná un dataset en la barra lateral para empezar a visualizar los gráficos.")
