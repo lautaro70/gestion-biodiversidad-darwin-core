@@ -1,6 +1,6 @@
 import pandas as pd
 import folium
-
+import streamlit as st
 from core.ejercicio3_validaciones import validar_par_coordenadas
 
 def obtener_columnas_coordenadas(df):
@@ -151,3 +151,89 @@ def crear_mapa_folium(df, criterio_color):
         ).add_to(mapa)
 
     return mapa
+
+
+
+def mostrar_multimedia(
+    fila,
+    dataset_actual,
+    df_multimedia
+):
+    """
+    Muestra la multimedia asociada a una observación.
+    """
+
+    st.subheader("Multimedia")
+
+    # -----------------
+    # iNaturalist
+    # -----------------
+
+    if dataset_actual == "Inaturalist":
+
+        multimedia = df_multimedia[
+            df_multimedia["id"].astype(str)
+            == str(fila["id"])
+        ]
+
+        st.write(
+            "Multimedia encontrada:",
+            len(multimedia)
+        )
+
+        if multimedia.empty:
+
+            st.info(
+                "No hay imágenes asociadas."
+            )
+
+            return
+
+        for _, media in multimedia.iterrows():
+
+            st.image(
+                media["identifier"]
+            )
+
+    # -----------------
+    # Xeno-Canto
+    # -----------------
+
+    elif dataset_actual == "XenoCanto":
+
+        multimedia = df_multimedia[
+            df_multimedia["CoreId"].astype(str)
+            == str(fila["id"])
+        ]
+
+        if multimedia.empty:
+
+            st.info(
+                "No hay multimedia asociada."
+            )
+
+            return
+
+        audios = multimedia[
+            multimedia["type"]
+            .astype(str)
+            .str.contains(
+                "sound",
+                case=False,
+                na=False
+            )
+        ]
+
+        if audios.empty:
+
+            st.info(
+                "No se encontraron audios."
+            )
+
+            return
+
+        for _, audio in audios.iterrows():
+
+            st.audio(
+                audio["Identifier"]
+            )
