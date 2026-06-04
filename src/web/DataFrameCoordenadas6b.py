@@ -127,11 +127,7 @@ def crear_mapa_folium(df, criterio_color):
             criterio_color,
             "Sin dato"
         )
-
-        popup = ""
-
-        if "scientificName" in fila:
-            popup += f"{fila['scientificName']}"
+        popup = str(fila["occurrenceID"])
 
         folium.CircleMarker(
 

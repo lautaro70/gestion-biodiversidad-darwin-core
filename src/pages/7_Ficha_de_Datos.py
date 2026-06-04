@@ -2,6 +2,7 @@ import streamlit as st
 from web.barra_lateral import renderizar_barra_lateral
 import folium
 from streamlit_folium import st_folium
+import pandas as pd
 
 from web.DataFrameCoordenadas6b import obtener_columnas_coordenadas,obtener_registros_validos_para_mapa,obtener_criterios_coloreo,crear_mapa_folium
 
@@ -64,8 +65,58 @@ mapa = crear_mapa_folium(
     criterio_color
 )
 
-st_folium(
+mapa_data = st_folium(
     mapa,
     width=1000,
     height=600
 )
+
+#------6c------
+
+popup_seleccionado = mapa_data.get(
+    "last_object_clicked_popup"
+)
+
+if popup_seleccionado:
+
+    registro = df_mapa[
+        df_mapa["occurrenceID"].astype(str)
+        == str(popup_seleccionado)
+    ]
+
+    if not registro.empty:
+
+        fila = registro.iloc[0]
+
+        st.subheader("Ficha de observación")
+
+        campos_ficha = [
+            ("Reino", "kingdom"),
+            ("Filo", "phylum"),
+            ("Clase", "class"),
+            ("Orden", "order"),
+            ("Familia", "family"),
+            ("Género", "genus"),
+            ("Especie", "scientificName"),
+            ("País", "country"),
+            ("Código país", "countryCode"),
+            ("Provincia", "stateProvince"),
+            ("Departamento", "county"),
+            ("Localidad", "locality"),
+            ("Fecha", "eventDate")
+        ]
+
+        datos = []
+
+    for nombre, columna in campos_ficha:
+
+        if columna in fila.index:
+
+            datos.append({
+                "Campo": nombre,
+                "Valor": fila[columna]
+            })
+
+    st.table(
+        pd.DataFrame(datos)
+    )
