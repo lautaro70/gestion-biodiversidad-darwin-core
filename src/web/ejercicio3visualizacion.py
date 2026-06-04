@@ -23,38 +23,50 @@ def obtener_datos_barras(df, top_n):
 #------3b
 
 def obtener_datos_lineas(df, anio_inicio, anio_fin):
-    # Creamos un diccionario donde los anios sean la clave y la cantidad de registros que hay en ellos el valor
+   # Creamos un diccionario donde los anios sean la clave y la cantidad de registros su valor
     diccionario_anios = {}
     
     # Inicializamos contadores para registrar cuántos datos se descartan 
     excluidos_nulos = 0
     excluidos_invalidos = 0
 
-    for celda in df['eventDate']:
-        if pd.isna(celda): # Si el valor de la celda es nulo
-            excluidos_nulos += 1
-            continue # Saltamos a la siguiente fila
-        
-        try:
-            texto_fecha = str(celda) # Como la mayoria de las fechas vienen: 2024-06-07 agarramos los primeros 4 caracteres
-            anio_texto = texto_fecha[:4]
+    # Nos aseguramos de saber si existe la columna de respaldo 'year'
+    tiene_columna_year = 'year' in df.columns
 
-            anio_numero = int(anio_texto) # Convertimos los 4 caracteres en numero entero
-            
+    for i, celda in enumerate(df['eventDate']):
+        anio_numero = None
+        
+        # 1. Intentamos extraer el año de eventDate si es un dato válido
+        if not pd.isna(celda) and str(celda).strip() not in ["None", "nan", "<NA>", ""]:
+            try:
+                anio_texto = str(celda)[:4]
+                anio_numero = int(anio_texto)
+            except:
+                pass # Si falla, dejamos que intente con la columna 'year'
+
+        # 2. Si eventDate falló o era "None", usamos la columna 'year' como respaldo
+        if anio_numero is None and tiene_columna_year:
+            valor_year = df['year'].iloc[i]
+            if not pd.isna(valor_year) and str(valor_year).strip() not in ["None", "nan", "", "0"]:
+                try:
+                    anio_numero = int(float(valor_year)) # float por si viene como 1998.0
+                except:
+                    pass
+
+        # 3. Si logramos conseguir un año válido (por cualquiera de las dos vías)
+        if anio_numero is not None:
             # Verificamos si el año está dentro de lo que el usuario movió en el slider
-            if anio_numero >= anio_inicio and anio_numero <= anio_fin:
+            if anio_inicio <= anio_numero <= anio_fin:
                 if anio_numero in diccionario_anios:
-                    # Si el año ya estaba en nuestro diccionario, le sumamos 1 al contador
                     diccionario_anios[anio_numero] += 1
                 else:
-                    # Si es la primera vez que aparece este año, lo inauguramos en 1
                     diccionario_anios[anio_numero] = 1
-
-        except:
-            # Si la celda tenía un texto roto o inválido (ejem: "Fecha desconocida") que no se puede pasar a int,
-            # el 'try' va a fallar, y el 'except' va a haacer que siga sin romper el programa.
-            excluidos_invalidos += 1
-            continue
+        else:
+            # Si no pudimos rescatar el año de ninguna forma, lo contamos como excluido
+            if pd.isna(celda) or str(celda).strip() in ["None", "nan", "<NA>", ""]:
+                excluidos_nulos += 1
+            else:
+                excluidos_invalidos += 1
         
     # Ordenamos las tuplas por su clave (el anio) 
     lista_ordenada = sorted(diccionario_anios.items())
@@ -70,7 +82,6 @@ def obtener_datos_lineas(df, anio_inicio, anio_fin):
     total_excluidos = excluidos_nulos + excluidos_invalidos
     
     return resultado_serie, total_excluidos
-
 #-----------------Ejercicio 3c--------------------
 
 
