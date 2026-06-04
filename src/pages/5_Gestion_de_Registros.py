@@ -111,6 +111,11 @@ try:
     # ============================================
     if "mensaje_exito" in st.session_state:
         st.success(st.session_state["mensaje_exito"])
+        if "campos_modificados" in st.session_state:
+            st.info("Campos modificados")
+            for campo, (viejo, nuevo) in st.session_state["campos_modificados"].items():
+                st.write(f"- **{campo}**: '{viejo}' -> '{nuevo}'")
+            del st.session_state["campos_modificados"]
         del st.session_state["mensaje_exito"]
         
     st.header("Editar Registro")
@@ -191,12 +196,7 @@ try:
                 if not cambios:
                     st.warning("No hiciste ningún cambio")
                 else:
-                    st.info("Campos a Modificar")
-                    for campo,valor_nuevo in cambios.items():
-                        valor_viejo= registro.get(campo,"")
-                        st.write(f"- **{campo}**: '{valor_viejo}' -> '{valor_nuevo}'")
-
-                # FUNCIÓN DE ACTUALIZACIÓN
+                    # FUNCIÓN DE ACTUALIZACIÓN
                     exito, mensaje = actualizar_multiples_campos_validado(
                         dataset_seleccionado,
                         columna_id,
@@ -206,6 +206,7 @@ try:
                     
                     if exito:
                         st.session_state["mensaje_exito"] = mensaje
+                        st.session_state["campos_modificados"] = {campo: (registro.get(campo, ""), valor_nuevo) for campo, valor_nuevo in cambios.items()}
                         # Limpiar el registro guardado y recargar
                         del st.session_state["registro_a_editar"]
                         st.rerun()
