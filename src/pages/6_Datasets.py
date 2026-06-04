@@ -4,6 +4,8 @@ from datetime import datetime
 
 from common.constants import DATASETS
 from web.barra_lateral import renderizar_barra_lateral
+from web.carga_datasets import cargar_dataset_procesado
+
 
 #EJERCICIO 5A
 
@@ -45,3 +47,60 @@ st.dataframe(
     use_container_width=True
 )
 
+
+#EJERCICIO 5B
+
+st.divider()
+
+st.header("5.B - Información detallada de datasets")
+
+dataset_seleccionado = st.selectbox(
+    "Seleccione un dataset:",
+    options=list(DATASETS.keys())
+)
+
+try:
+    df = cargar_dataset_procesado(
+        dataset_seleccionado
+    )
+
+except FileNotFoundError as e:
+    st.error(str(e))
+    st.stop()
+
+st.subheader("Columnas disponibles")
+
+with st.expander("Ver columnas"):
+    st.write(
+        df.columns.tolist()
+    )
+
+st.subheader("Cantidad total de registros")
+
+st.metric(
+    "Registros",
+    len(df)
+)
+
+st.subheader(
+    "Porcentaje de valores nulos por columna"
+)
+
+porcentaje_nulos = (
+    df.isnull()
+      .mean()
+      .mul(100)
+      .round(2)
+)
+
+df_nulos = porcentaje_nulos.reset_index()
+
+df_nulos.columns = [
+    "Columna",
+    "% Nulos"
+]
+
+st.dataframe(
+    df_nulos,
+    use_container_width=True
+)
