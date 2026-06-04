@@ -150,8 +150,12 @@ for nombre_dataset in DATASETS.keys():
             None
         )
         
-
-        if col_lat and col_lon:
+        
+        if (
+            col_lat and col_lon
+            and df[col_lat].notna().sum() > 0
+            and df[col_lon].notna().sum() > 0
+        ):
 
             coordenadas_validas = 0
 
@@ -184,7 +188,10 @@ for nombre_dataset in DATASETS.keys():
         # Fechas válidas
         # ------------------------
 
-        if "eventDate" in df.columns:
+        if (
+            "eventDate" in df.columns
+            and df["eventDate"].notna().sum() > 0
+        ):
 
             fechas_validas = (
                 pd.to_datetime(
@@ -224,6 +231,7 @@ for nombre_dataset in DATASETS.keys():
             total_celdas * 100,
             2
         )
+
 
         datos_comparacion.append({
 
