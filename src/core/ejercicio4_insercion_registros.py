@@ -458,11 +458,6 @@ def insertar_registro_desde_diccionario(dataset: str, registro: dict) -> tuple[b
     - (False, mensaje_error) si hubo un error
     """
     
-    from pathlib import Path
-    import csv
-    from common.dataset_utils import obtener_ruta_y_separador
-    
-
     es_valido, errores = validar_registro(dataset, registro)
     
     if not es_valido:
@@ -504,7 +499,6 @@ def insertar_registro_desde_diccionario(dataset: str, registro: dict) -> tuple[b
                 escritor.writerow(fila)
         
         # Registrar en el log
-        from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
         registrar_operacion_en_log(f"Inserción desde Streamlit en {dataset}", "INSERT")
         
         return True, f"Registro insertado correctamente en {dataset}"

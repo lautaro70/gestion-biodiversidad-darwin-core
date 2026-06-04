@@ -353,7 +353,7 @@ def actualizar_registro_validado(
     - retorna los errores encontrados
     """
 
-    ruta_origen, separador = obtener_ruta_y_separador(dataset)
+    ruta_origen, separador = obtener_ruta_lectura(dataset)
 
     if ruta_origen is None:
         return False, "Dataset no reconocido."
@@ -460,7 +460,7 @@ def actualizar_multiples_campos_validado(
     - retorna la lista de errores
     """
 
-    ruta_origen, separador = obtener_ruta_y_separador(dataset)
+    ruta_origen, separador = obtener_ruta_lectura(dataset)
 
     if ruta_origen is None:
         return False, "Dataset no reconocido."

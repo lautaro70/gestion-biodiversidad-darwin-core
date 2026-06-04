@@ -21,6 +21,8 @@ def registrar_operacion_en_log(mensaje: str, tipo: str = "INFO") -> None:
 #Aca armo la linea del cambio que se estaria realizando
     linea = f"{fecha_hora} | {tipo} | {mensaje}\n"
 
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True) 
+
     with open(LOG_PATH, "a", encoding="utf-8") as archivo:
         archivo.write(linea)
         #Y aca simplemente ponemos la linea del cambio en el archivo

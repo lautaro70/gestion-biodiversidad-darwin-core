@@ -1,8 +1,10 @@
 import streamlit as st
+from datetime import date, datetime
 from common.barra_lateral import renderizar_barra_lateral
 from core.carga_datasets import cargar_dataset_procesado
 from core.ejercicio4_insercion_registros import insertar_registro_desde_diccionario
 from core.ejercicio5_actualizacion_registros import buscar_registros
+from core.ejercicio5_actualizacion_registros import actualizar_multiples_campos_validado
 
 st.set_page_config(page_title="Gestión de registros")
 st.title("Gestión de registros")
@@ -104,6 +106,111 @@ try:
                     del st.session_state["registro_a_editar"]
         else:
             st.warning("Por favor, ingresá un ID")
+    
+    # EJERCICIO 4.C - Formulario de edición
+    # ============================================
+    if "mensaje_exito" in st.session_state:
+        st.success(st.session_state["mensaje_exito"])
+        del st.session_state["mensaje_exito"]
+        
+    st.header("Editar Registro")
+    
+    #chequeamos si hay algún registro guardado del punto anterior
+    if "registro_a_editar" in st.session_state: 
+        registro = st.session_state["registro_a_editar"]
+    
+        st.success(f"Editar Registro con {columna_id}={registro.get(columna_id, '')}")
 
+        with st.form("formulario_edicion"):
+            st.subheader("Modificá los datos del Registro")
+
+            #Obtenemos los valores actuales del registro
+            nombre_actual= registro.get("scientificName", "")
+        
+            # Latitud y Longitud
+            try:
+                latitud_actual = float(registro.get(nombre_columna_latitud, 0.0))
+            except (ValueError, TypeError):
+                latitud_actual=0.0
+        
+            try:
+                longitud_actual= float(registro.get(nombre_columna_longitud, "0.0"))
+            except(ValueError,TypeError):
+                longitud_actual= 0.0
+            
+            #Fecha
+            fecha_actual= registro.get("eventDate", "")
+
+            if fecha_actual and isinstance(fecha_actual, str):
+                try:
+                    fecha_actual= datetime.strptime(fecha_actual, "%Y-%m-%d").date()
+                except(ValueError):
+                    fecha_actual=date.today()
+            elif not fecha_actual: 
+                fecha_actual = date.today()
+            
+            #Pais
+            pais_actual = registro.get(nombre_columna_pais,"")
+            
+            #Para poder Editarlos
+            nombre_nuevo = st.text_input("Nombre Cientifico", value= nombre_actual)
+
+            latitud_nueva = st.number_input("Latitud", value=latitud_actual, step =0.0001,format="%.6f")
+            longitud_nueva = st.number_input ("Longitud", value=longitud_actual, step=0.001, format ="%.6f")
+
+            fecha_nueva= st.date_input("Fecha del Evento", value=fecha_actual)
+            
+            if pais_es_codigo:
+                pais_nuevo= st.text_input("Codigo de País", value=pais_actual)
+            else:
+                pais_nuevo= st.text_input("País", value=pais_actual)
+            
+            boton_actualizar= st.form_submit_button("Actualizar Registro")
+
+            if boton_actualizar:
+                #Armamos diccionario para usar en la función
+                cambios={}
+
+                if nombre_nuevo != nombre_actual:
+                    cambios["scientificName"]=nombre_nuevo
+
+                if latitud_nueva != latitud_actual:
+                    cambios[nombre_columna_latitud]=latitud_nueva
+                if longitud_nueva != longitud_actual:
+                    cambios[nombre_columna_longitud]=longitud_nueva 
+                
+                if fecha_nueva!= fecha_actual:
+                    cambios["eventDate"]=str(fecha_nueva)
+
+                if pais_nuevo!= pais_actual:
+                    if pais_es_codigo:
+                        cambios[nombre_columna_pais]=pais_nuevo.upper()
+                    else:
+                        cambios[nombre_columna_pais]=pais_nuevo
+                
+                if not cambios:
+                    st.warning("No hiciste ningún cambio")
+                else:
+                    st.info("Campos a Modificar")
+                    for campo,valor_nuevo in cambios.items():
+                        valor_viejo= registro.get(campo,"")
+                        st.write(f"- **{campo}**: '{valor_viejo}' -> '{valor_nuevo}'")
+
+                # FUNCIÓN DE ACTUALIZACIÓN
+                    exito, mensaje = actualizar_multiples_campos_validado(
+                        dataset_seleccionado,
+                        columna_id,
+                        str(registro.get(columna_id, "")),
+                        cambios
+                    )
+                    
+                    if exito:
+                        st.session_state["mensaje_exito"] = mensaje
+                        # Limpiar el registro guardado y recargar
+                        del st.session_state["registro_a_editar"]
+                        st.rerun()
+                    else:
+                        st.error(f"{mensaje}")
+            
 except Exception as error:
     st.error(f"Error al cargar el dataset '{dataset_seleccionado}': {error}")
