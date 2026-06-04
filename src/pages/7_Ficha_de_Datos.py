@@ -3,8 +3,8 @@ from web.barra_lateral import renderizar_barra_lateral
 import folium
 from streamlit_folium import st_folium
 import pandas as pd
-
-from web.DataFrameCoordenadas6b import obtener_columnas_coordenadas,obtener_registros_validos_para_mapa,obtener_criterios_coloreo,crear_mapa_folium
+import os
+from web.DataFrameCoordenadas6b import obtener_columnas_coordenadas,obtener_registros_validos_para_mapa,obtener_criterios_coloreo,crear_mapa_folium,mostrar_multimedia
 
 
 st.set_page_config(page_title="Ficha de datos")
@@ -108,15 +108,33 @@ if popup_seleccionado:
 
         datos = []
 
-    for nombre, columna in campos_ficha:
+        for nombre, columna in campos_ficha:
+            if columna in fila.index:
+                datos.append({
+                    "Campo": nombre,
+                    "Valor": fila[columna]
+                })
 
-        if columna in fila.index:
+        st.table(
+            pd.DataFrame(datos)
+        )
+        
+        dataset_actual = st.session_state[
+            "dataset_actual"
+        ]
 
-            datos.append({
-                "Campo": nombre,
-                "Valor": fila[columna]
-            })
-
-    st.table(
-        pd.DataFrame(datos)
-    )
+        if dataset_actual == "Inaturalist":
+            df_multimedia = pd.read_csv(
+            "raw_datasets/Inaturalist/Inaturalist/media.csv",
+            sep=","
+            )
+        elif dataset_actual == "XenoCanto":
+            df_multimedia = pd.read_csv(
+            "raw_datasets/Xenocanto/Xenocanto/Multimedia.txt",
+            sep=","
+            )
+        mostrar_multimedia(
+            fila,
+            dataset_actual,
+            df_multimedia
+        )
