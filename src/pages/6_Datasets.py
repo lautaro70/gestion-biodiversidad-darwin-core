@@ -6,6 +6,7 @@ from common.constants import DATASETS
 from web.barra_lateral import renderizar_barra_lateral
 from web.carga_datasets import cargar_dataset_procesado
 from core.ejercicio3_validaciones import validar_par_coordenadas
+from pathlib import Path
 
 
 #EJERCICIO 5A
@@ -271,3 +272,61 @@ st.dataframe(
     df_comparacion,
     use_container_width=True
 )
+
+
+# EJERCICIO 5D
+
+st.divider()
+
+st.header("5.D - Documentación")
+
+ruta_documentacion = (
+    Path(__file__).resolve().parent.parent.parent
+    / "documentation"
+)
+
+archivos_md = list(
+    ruta_documentacion.glob("*.md")
+)
+
+
+if not archivos_md:
+
+    st.info(
+        "No se encontraron archivos Markdown en la carpeta documentation."
+    )
+
+else:
+
+    nombres_archivos = [
+        archivo.name
+        for archivo in archivos_md
+    ]
+
+    archivo_seleccionado = st.selectbox(
+        "Seleccione un documento:",
+        nombres_archivos
+    )
+
+    ruta_archivo = (
+        ruta_documentacion
+        / archivo_seleccionado
+    )
+
+    try:
+
+        with open(
+            ruta_archivo,
+            "r",
+            encoding="utf-8"
+        ) as archivo:
+
+            contenido = archivo.read()
+
+        st.markdown(contenido)
+
+    except Exception as e:
+
+        st.error(
+            f"Error al leer el archivo: {e}"
+        )
