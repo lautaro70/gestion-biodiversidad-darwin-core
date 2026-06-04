@@ -2,6 +2,8 @@ import streamlit as st
 from web.barra_lateral import renderizar_barra_lateral
 from web.ejercicio3visualizacion import obtener_datos_barras, obtener_datos_lineas,obtener_datos_taxonomia
 import matplotlib.pyplot as plt
+import pandas as pd
+import os
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)
 renderizar_barra_lateral()
@@ -9,11 +11,13 @@ renderizar_barra_lateral()
 st.set_page_config(page_title="Visualización")
 st.title("Visualización")
 
-#------Implementacion 3a
-
-if "df_actual" in st.session_state and st.session_state["df_actual"] is not None:
-    df = st.session_state["df_actual"]
+# ------ COMPROBACIÓN DE DATASET  ------
+if "dataset_actual" in st.session_state and st.session_state["dataset_actual"] is not None:
+    df = st.session_state["dataset_actual"]
     
+    
+    #----------------Punto 3a----------------
+  
     st.markdown("---")
     st.header("Distribución Geográfica de Registros(3A)")
     
@@ -25,7 +29,6 @@ if "df_actual" in st.session_state and st.session_state["df_actual"] is not None
 
     # Validamos el resultado del filtro 
     if not datos_grafico.empty:
-        
         # Creamos el gráfico con Matplotlib
         fig, ax = plt.subplots(figsize=(10, 5))
         
@@ -41,31 +44,25 @@ if "df_actual" in st.session_state and st.session_state["df_actual"] is not None
         # Rotamos las etiquetas del eje X a 45 grados para que no se superpongan los nombres
         plt.xticks(rotation=45, ha='right')
         
-        # ajustamos los márgenes del lienzo
+        # Ajustamos los márgenes del lienzo
         plt.tight_layout()
         
         # Mostramos el gráfico final en la interfaz de Streamlit
         st.pyplot(fig)
-        
     else:
-        # Si la serie está vacía 
         st.info("No se encontraron datos geográficos suficientes en este dataset para generar el gráfico.")
 
-else:
-    # Si entran a la página sin haber elegido un archivo en el sidebar 
-    st.warning("Por favor, seleccioná un dataset en la barra lateral para empezar a visualizar los gráficos.")
 
-
-    #-----------3b------------------
-
-
+   
+    # ------------------Punto 3b----------------------
+   
     st.markdown("--------")
     st.header("Evolución temporal de registros por anio(3B)")
 
     min_anio_ds = None
     max_anio_ds = None
     
-    for celda in df['eventDate']: #Buscamos el anio maximo y minimo para poder hacer bien el st.slider
+    for celda in df['eventDate']: # Buscamos el anio maximo y minimo para poder hacer bien el st.slider
         if not pd.isna(celda):
             try:
                 anio_num = int(str(celda)[:4])
@@ -76,16 +73,14 @@ else:
                 if max_anio_ds is None or anio_num > max_anio_ds:
                     max_anio_ds = anio_num
             except:
-                continue #Si se rompe que siga con la siguiente fecha
+                continue # Si se rompe que siga con la siguiente fecha
 
-
-    #Chequeamos que los anios tengan valor
+    # Chequeamos que los anios tengan valor
     if min_anio_ds is not None and max_anio_ds is not None:
-        
         if min_anio_ds == max_anio_ds:
             min_anio_ds -= 1
 
-        #Armamos el slider 
+        # Armamos el slider 
         rango_anios = st.slider(
             "Seleccioná el rango de años a analizar:",
             min_value=min_anio_ds,
@@ -93,42 +88,36 @@ else:
             value=(min_anio_ds, max_anio_ds)
         )
 
-        anio_ini, anio_fin = rango_anios #Este seria el rango elegido por el usuario
-#Llamamos a la funcion
+        anio_ini, anio_fin = rango_anios # Este seria el rango elegido por el usuario
+        
+        # Llamamos a la funcion
         datos_lineas, excluidos = obtener_datos_lineas(df, anio_ini, anio_fin)
 
-        #Y ahora si arrancamos con el grafico
-
         if not datos_lineas.empty:
-
             fig2, ax2 = plt.subplots(figsize=(10, 5))
-            #hacemos la linea con marcadore redondos
+            # Hacemos la linea con marcadores redondos
             ax2.plot(datos_lineas.index, datos_lineas.values, color='#e056fd', marker='o', linestyle='-', linewidth=2)
-            #Titulos de los ejes 
+            # Titulos de los ejes 
             ax2.set_title(f"Cantidad de Avistamientos por Año ({anio_ini} - {anio_fin})", fontsize=14, fontweight='bold')
             ax2.set_xlabel("Año de la Observación", fontsize=12)
             ax2.set_ylabel("Cantidad de Registros", fontsize=12)
 
-
-            #El eje x = integer (para que sean numeros)
+            # El eje x = integer (para que sean numeros)
             ax2.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
             plt.tight_layout()
             st.pyplot(fig2)
 
-            #Devoluciones 
-
+            # Devoluciones 
             st.info(f"ℹ️ Se excluyeron {excluidos} registros por presentar fechas nulas o inválidas.")
-            
         else:
             st.info("No hay registros en el rango de años seleccionado.")
-            
     else:
         st.info("No se encontraron fechas válidas en la columna 'eventDate' para armar la línea de tiempo.")
 
 
-
-#----------------Grafico 3c------------------------------
-
+    
+    # ---------------punto 3c---------------------
+    
     st.markdown("----------")
     st.header("Distribución por Nivel Taxonómico (3C)")
 
@@ -174,8 +163,9 @@ else:
         # Aca avisamos que solo mostramos las primeras 15 
         if len(datos_taxo) > 15:
             st.info(f"ℹ️ Mostrando las 15 categorías más frecuentes de un total de {len(datos_taxo)} encontradas.")
-                
     else:
          st.info(f"No se encontraron datos para el nivel taxonómico {seleccion_usuario}.")
-    
-    
+
+# ----------Si no se selcciono ningun dataset------------------
+else:
+    st.warning("Por favor, seleccioná un dataset en la barra lateral para empezar a visualizar los gráficos.")
