@@ -145,5 +145,10 @@ El sistema se rige por las siguientes definiciones constantes que **deben respet
     * **Inaturalist**: Ruta: `raw_datasets/Inaturalist/Inaturalist/observations.csv` | Separador: `,` (Coma).
     * **XenoCanto**: Ruta: `raw_datasets/XenoCanto/XenoCanto/Occurrence.txt` | Separador: `,` (Coma).
 
+**PROCESSED_DATASETS**: Diccionario que centraliza la ubicación de los datos limpios y validados generados tras la Etapa 1. Todos se exportan estandarizados en formato `.csv`:
+    * **IADIZA**: Ruta: `processed_datasets/IADIZA/IADIZA_processed.csv` | Separador: `\t` (Tabulación).
+    * **Inaturalist**: Ruta: `processed_datasets/Inaturalist/Inaturalist_processed.csv` | Separador: `,` (Coma).
+    * **XenoCanto**: Ruta: `processed_datasets/XenoCanto/XenoCanto_processed.csv` | Separador: `,` (Coma).
+
 ### Uso Transversal
 Cualquier módulo que necesite acceder a los datos (como `src/pages/2_Estado_del_sistema.py` o los notebooks) utiliza la función `obtener_ruta_y_separador(dataset)` definida en `src/common/functions.py`, la cual importa directamente estas constantes. Esto asegura que un cambio en la estructura de carpetas solo deba modificarse en un único lugar.

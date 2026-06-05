@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-from common.constants import DATASETS
+from common.constants import PROCESSED_DATASETS
 from web.barra_lateral import renderizar_barra_lateral
 from web.carga_datasets import cargar_dataset_procesado
 from core.ejercicio3_validaciones import validar_par_coordenadas
@@ -20,9 +20,13 @@ st.title("Exploración de datasets")
 def obtener_info_datasets():
     
     datos = []
+    
+    # Ordenamos alfabéticamente para mantener
+    # una visualización consistente.
 
-    for nombre, info in DATASETS.items():
-
+    for nombre in sorted(PROCESSED_DATASETS.keys()):
+        info = PROCESSED_DATASETS[nombre]
+        
         ruta = info["path"]
 
         tamanio_mb = ruta.stat().st_size / (1024 * 1024)
@@ -58,7 +62,7 @@ st.header("5.B - Información detallada de datasets")
 
 dataset_seleccionado = st.selectbox(
     "Seleccione un dataset:",
-    options=list(DATASETS.keys())
+    options=list(PROCESSED_DATASETS.keys())
 )
 
 try:
@@ -102,6 +106,14 @@ df_nulos.columns = [
     "% Nulos"
 ]
 
+# Mostramos primero las columnas con
+# mayor porcentaje de datos faltantes.
+
+df_nulos = df_nulos.sort_values(
+    by="% Nulos",
+    ascending=False
+)
+
 st.dataframe(
     df_nulos,
     use_container_width=True
@@ -117,7 +129,7 @@ st.header("5.C - Comparación de datasets")
 
 datos_comparacion = []
 
-for nombre_dataset in DATASETS.keys():
+for nombre_dataset in PROCESSED_DATASETS.keys():
 
     try:
 
@@ -151,6 +163,9 @@ for nombre_dataset in DATASETS.keys():
             None
         )
         
+        # Si el dataset no posee coordenadas cargadas,
+        # se muestra "-" en la tabla comparativa según
+        # el criterio definido por la cátedra.
         
         if (
             col_lat and col_lon
@@ -167,7 +182,10 @@ for nombre_dataset in DATASETS.keys():
 
                 if pd.isna(latitud) or pd.isna(longitud):
                     continue
-
+                
+                # Reutilizamos la validación oficial
+                # implementada en ejercicios anteriores.
+                
                 es_valido, _ = validar_par_coordenadas(
                     latitud,
                     longitud
@@ -189,6 +207,9 @@ for nombre_dataset in DATASETS.keys():
         # Fechas válidas
         # ------------------------
 
+        # Cuando no existen fechas disponibles,
+        # la métrica no se calcula y se visualiza "-".
+        
         if (
             "eventDate" in df.columns
             and df["eventDate"].notna().sum() > 0
@@ -216,6 +237,9 @@ for nombre_dataset in DATASETS.keys():
         # Campos completos
         # ------------------------
 
+        # La completitud se calcula considerando
+        # todos los campos no nulos del dataset.
+        
         total_celdas = (
             df.shape[0] *
             df.shape[1]
@@ -264,6 +288,9 @@ for nombre_dataset in DATASETS.keys():
 
         })
 
+# Consolidamos todas las métricas en una
+# única tabla comparativa.
+
 df_comparacion = pd.DataFrame(
     datos_comparacion
 )
@@ -279,6 +306,11 @@ st.dataframe(
 st.divider()
 
 st.header("5.D - Documentación")
+
+
+# Se muestran automáticamente todos los
+# archivos Markdown presentes en la carpeta
+# documentation generada durante la etapa 1.
 
 ruta_documentacion = (
     Path(__file__).resolve().parent.parent.parent
@@ -303,6 +335,8 @@ else:
         for archivo in archivos_md
     ]
 
+    # El usuario puede elegir qué documento desea consultar.
+    
     archivo_seleccionado = st.selectbox(
         "Seleccione un documento:",
         nombres_archivos
@@ -323,7 +357,8 @@ else:
 
             contenido = archivo.read()
 
-        st.markdown(contenido)
+        with st.expander("Ver documentación completa"):
+            st.markdown(contenido)
 
     except Exception as e:
 

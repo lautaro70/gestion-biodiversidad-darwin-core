@@ -1,7 +1,8 @@
 import csv
+import shutil
 from common.dataset_utils import obtener_ruta_y_separador
 from core.ejercicio2_lectura_dataset import obtener_indices_columnas
-from core.ejercicio5_actualizacion_registros import obtener_ruta_processed
+from core.ejercicio5_actualizacion_registros import obtener_ruta_processed, obtener_ruta_lectura
 from core.ejercicio3_validaciones import (
     validar_country_code_unico,
     validar_incertidumbre_unica,
@@ -17,7 +18,7 @@ def eliminar_por_id(dataset: str, id_buscado: str, columna_id: str = "occurrence
     Implementa 7.E (éxito) y 7.F (errores).
     """
 
-    ruta, separador = obtener_ruta_y_separador(dataset)
+    ruta, separador = obtener_ruta_lectura(dataset)
     indices = obtener_indices_columnas(dataset)
 
     indice_id = indices.get(columna_id) 
@@ -29,11 +30,12 @@ def eliminar_por_id(dataset: str, id_buscado: str, columna_id: str = "occurrence
         return error_msj
 
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
+    ruta_temp = ruta_carpeta_procesada.with_suffix('.tmp')
 
     eliminado = False
 
     with open(ruta, 'r', encoding='utf-8') as archivo:
-        with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
+        with open(ruta_temp, 'w', encoding='utf-8', newline='') as archivo_procesado:
             lector = csv.reader(archivo, delimiter=separador)
             escritor = csv.writer(archivo_procesado, delimiter=separador)
 
@@ -45,7 +47,7 @@ def eliminar_por_id(dataset: str, id_buscado: str, columna_id: str = "occurrence
                     eliminado = True
                     continue  # Saltea para no cargar la fila
                 escritor.writerow(fila)
-
+    shutil.move(ruta_temp, ruta_carpeta_procesada)
     cantidad_eliminados = 1 if eliminado else 0
     
     if eliminado:
@@ -68,7 +70,7 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
     Genera un nuevo archivo en processed_datasets con los registros restantes.
     Devuelve: mensaje indicando el resultado de la operación.
     """
-    ruta, separador = obtener_ruta_y_separador(dataset)
+    ruta, separador = obtener_ruta_lectura(dataset)
     indices = obtener_indices_columnas(dataset)
     
     indice_columna = indices.get(columna_de_interes)
@@ -78,12 +80,12 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
 
     lista_suministrada = [str(elemento).strip() for elemento in lista_suministrada]
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
-
+    ruta_temp = ruta_carpeta_procesada.with_suffix('.tmp')
     # Cambiamos el booleano por un contador para cumplir mejor el Punto 7.E
     cantidad_eliminados = 0
 
     with open(ruta, 'r', encoding='utf-8') as archivo:
-        with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
+        with open(ruta_temp, 'w', encoding='utf-8', newline='') as archivo_procesado:
             lector = csv.reader(archivo, delimiter=separador)
             escritor = csv.writer(archivo_procesado, delimiter=separador)
 
@@ -95,6 +97,7 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
                     cantidad_eliminados += 1 # Contamos cada eliminación
                     continue  # Saltea si esta en la lista
                 escritor.writerow(fila)
+    shutil.move(ruta_temp, ruta_carpeta_procesada)
     
     # --- PUNTO 7e
     
@@ -114,7 +117,7 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
     Elimina registros que cumplen una condición.
     Implementa 7.E (conteo) y 7.F (errores de validación).
     """
-    ruta, separador = obtener_ruta_y_separador(dataset)
+    ruta, separador = obtener_ruta_lectura(dataset)
     indices = obtener_indices_columnas(dataset)
 
     indice_columna = indices.get(columna_de_interes)
@@ -125,6 +128,7 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
         return 'No existe esa columna'
 
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
+    ruta_temp = ruta_carpeta_procesada.with_suffix('.tmp')
     cantidad_eliminados = 0
     
     try:
@@ -138,7 +142,7 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
         return 'Operador no válido'
 
     with open(ruta, 'r', encoding='utf-8') as archivo:
-        with open(ruta_carpeta_procesada, 'w', encoding='utf-8', newline='') as archivo_procesado:
+        with open(ruta_temp, 'w', encoding='utf-8', newline='') as archivo_procesado:
 
             lector = csv.reader(archivo, delimiter=separador)
             escritor = csv.writer(archivo_procesado, delimiter=separador)
@@ -175,6 +179,7 @@ def eliminar_por_condicion(dataset: str, valor: str, columna_de_interes: str, op
                         continue
 
                 escritor.writerow(fila)
+    shutil.move(ruta_temp, ruta_carpeta_procesada)
 
     # --- 7e y c ---
     if cantidad_eliminados > 0:
