@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-from common.constants import DATASETS
+from common.constants import PROCESSED_DATASETS
 from web.barra_lateral import renderizar_barra_lateral
 from web.carga_datasets import cargar_dataset_procesado
 from core.ejercicio3_validaciones import validar_par_coordenadas
@@ -24,10 +24,9 @@ def obtener_info_datasets():
     # Ordenamos alfabéticamente para mantener
     # una visualización consistente.
 
-    for nombre in sorted(DATASETS.keys()):
-
-        info = DATASETS[nombre]
-
+    for nombre in sorted(PROCESSED_DATASETS.keys()):
+        info = PROCESSED_DATASETS[nombre]
+        
         ruta = info["path"]
 
         tamanio_mb = ruta.stat().st_size / (1024 * 1024)
@@ -63,7 +62,7 @@ st.header("5.B - Información detallada de datasets")
 
 dataset_seleccionado = st.selectbox(
     "Seleccione un dataset:",
-    options=list(DATASETS.keys())
+    options=list(PROCESSED_DATASETS.keys())
 )
 
 try:
@@ -130,7 +129,7 @@ st.header("5.C - Comparación de datasets")
 
 datos_comparacion = []
 
-for nombre_dataset in DATASETS.keys():
+for nombre_dataset in PROCESSED_DATASETS.keys():
 
     try:
 
