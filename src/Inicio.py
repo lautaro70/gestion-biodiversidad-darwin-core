@@ -32,8 +32,12 @@ Utilice el menú lateral ubicado a la izquierda de la pantalla para desplazarse 
 
 **¿Qué información podrá consultar?**      
 * **Estado del sistema:** Muestra un registro histórico (logs) de las operaciones realizadas sobre los datasets.
-* **Búsqueda:** *(Próximamente)*  
-* **Visualización:** *(Próximamente)*""")
+* **Búsqueda:** *Permite localizar registros específicos a partir de criterios combinables. Incluye vista de tablas paginadas, exportación a CSV y acceso a la 
+                **Ficha de Datos** interactiva con mapas y contenido multimedia.*  
+* **Visualización:** *Presenta de forma gráfica la distribución y características de los datos mediante dashboards y reportes estadísticos*
+* **Gestión de Registros:** Interfaz transaccional que permite realizar operaciones de inserción, actualización y eliminación de registros directamente desde la aplicación.
+* **Exploración de Datasets:** Ofrece una vista general de todos los datasets disponibles en el sistema, permitiendo comparar su completitud, peso en disco y leer la documentación generada.
+        """)
 
 # Llamo a la funcion para dibujar el selector (Punto 1.B)
 renderizar_barra_lateral()
