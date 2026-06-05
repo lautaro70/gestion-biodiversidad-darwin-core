@@ -1,10 +1,14 @@
 import streamlit as st
+import pandas as pd
 from datetime import date, datetime
 from web.barra_lateral import renderizar_barra_lateral
 from web.carga_datasets import cargar_dataset_procesado
 from core.ejercicio4_insercion_registros import insertar_registro_desde_diccionario
 from core.ejercicio5_actualizacion_registros import buscar_registros
 from core.ejercicio5_actualizacion_registros import actualizar_multiples_campos_validado
+from core.ejercicio6_eliminacion_registros import eliminar_por_id
+from core.ejercicio6_eliminacion_registros import eliminar_por_lista_suministrada
+from core.ejercicio6_eliminacion_registros import eliminar_por_condicion
 
 st.set_page_config(page_title="Gestión de registros")
 st.title("Gestión de registros")
@@ -212,6 +216,162 @@ try:
                         st.rerun()
                     else:
                         st.error(f"{mensaje}")
+
+    # EJERCICIO 4.D - Eliminación de registros
+    # ============================================
+    st.header("Eliminación de Registros")
+
+    # Mostrar mensaje de éxito si existe (después de recargar)
+    if "mensaje_eliminacion" in st.session_state:
+        st.success(st.session_state["mensaje_eliminacion"])
+        del st.session_state["mensaje_eliminacion"]
+
+    #separamos por modalidad
+    tab1,tab2,tab3 = st.tabs(["Por ID Único", "Por Valor de Columna", "Por Condición"])
+
+    # ---------- TAB 1: Por ID único ----------
+    with tab1:
+        st.subheader("Eliminar un Registro por su Identificador Único")
+
+        if dataset_seleccionado == "IADIZA":
+            columna_id_eliminar = "occurrenceID"
+        else:
+            columna_id_eliminar = "id"
+        
+        st.caption(f"Elimar de la columna: **{columna_id_eliminar}**")
+
+        id_a_eliminar = st.text_input(f"Ingresá el {columna_id_eliminar} a Eliminar:", key = "id_eliminar")
+
+        if st.button("Ver Registro a Eliminar", key= "ver_id"):
+            if id_a_eliminar:
+                filtros = {columna_id_eliminar:id_a_eliminar}
+                resultados = buscar_registros (dataset_seleccionado,filtros)
+
+                if resultados:
+                    st.session_state["registro_a_eliminar_id"] = resultados[0]
+                    st.session_state["id_a_eliminar_confirmar"] = id_a_eliminar
+                    st.rerun()
+                else:
+                    st.error(f"No se encontró ningún registro con {columna_id_eliminar} = '{id_a_eliminar}'")
+            else:
+                st.warning("Ingresá un ID")
+
+        if "registro_a_eliminar_id" in st.session_state:
+            st.warning("Se va a eliminar este registro:")
+            with st.expander("Ver registro a eliminar"):
+                st.json(st.session_state["registro_a_eliminar_id"])
+    
+            if st.button("Confirmar eliminación", key="confirmar_id"):
+                resultado = eliminar_por_id(dataset_seleccionado, st.session_state["id_a_eliminar_confirmar"], columna_id_eliminar)
+                st.session_state["mensaje_eliminacion"] = resultado
+                del st.session_state["registro_a_eliminar_id"]
+                del st.session_state["id_a_eliminar_confirmar"]
+                st.rerun()
+    
+    # ---------- TAB 2: Por valor de columna ----------
+    with tab2:
+        st.subheader("Eliminar por Valor de una Columna")
+
+        columna_eliminar= st.selectbox(
+            "Seleccioná la Columna:", 
+            options= list(datos.columns),
+            key= "col_eliminar")
+        
+        if columna_eliminar:
+            valores_unicos= datos[columna_eliminar].dropna().unique().tolist()
+            valores_a_eliminar= st.multiselect(
+                f"Seleccioná los Valores a Eliminar de {columna_eliminar}",
+                options= valores_unicos,
+                key= "valores_eliminar"  )
+            
+            if valores_a_eliminar:
+                #los mostramos
+                registros_afectados= datos[datos[columna_eliminar].isin(valores_a_eliminar)]
+                st.warning(f"Se eliminarán **{len(registros_afectados)}** registros")
+
+                with st.expander(f"ver {len(registros_afectados)} registros a eliminar"):
+                    st.dataframe(registros_afectados)
+                
+                if st.button("Confirmar Eliminación Por Valores", key= "confirmar_valores"):
+                    resultado= eliminar_por_lista_suministrada(
+                        dataset_seleccionado,
+                        valores_a_eliminar,
+                        columna_eliminar
+                    )
+                    st.session_state["mensaje_eliminacion"] = resultado
+                    st.rerun()
+            else:
+                st.info("Seleccioná uno o más valores para eliminar")
+
+    # ---------- TAB 3: Por condición ----------
+    with tab3:
+        st.subheader("Eliminar Registros que cumplan una Condición")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            columna_condicion = st.selectbox(
+                "Columna:",
+                options=list(datos.columns),
+                key="col_cond"
+            )
+        
+        with col2:
+            operador = st.selectbox(
+                "Operador:",
+                options=["==", "!=", ">", ">=", "<", "<="],
+                key="operador"
+            )
+        
+        with col3:
+            valor_condicion = st.text_input("Valor a comparar:", key="valor_cond")
+
+        if columna_condicion and valor_condicion and operador:
+            try:
+                try:
+                    valor_comparacion = float(valor_condicion)
+                except ValueError:
+                    valor_comparacion = valor_condicion
+                
+                # Aplicar operador
+                if operador == "==":
+                    cumple = datos[columna_condicion].astype(str) == str(valor_comparacion)
+                elif operador == "!=":
+                    cumple = datos[columna_condicion].astype(str) != str(valor_comparacion)
+                elif operador == ">":
+                    cumple = pd.to_numeric(datos[columna_condicion], errors='coerce') > valor_comparacion
+                elif operador == ">=":
+                    cumple = pd.to_numeric(datos[columna_condicion], errors='coerce') >= valor_comparacion
+                elif operador == "<":
+                    cumple = pd.to_numeric(datos[columna_condicion], errors='coerce') < valor_comparacion
+                elif operador == "<=":
+                    cumple = pd.to_numeric(datos[columna_condicion], errors='coerce') <= valor_comparacion
+                else:
+                    cumple = pd.Series([False] * len(datos))
+                
+                registros_afectados = datos[cumple]
+                
+                if len(registros_afectados) > 0:
+                    st.warning(f"Se van a eliminar **{len(registros_afectados)}** Registros")
+                    
+                    with st.expander(f"Ver {len(registros_afectados)} Registros a Eliminar"):
+                        st.dataframe(registros_afectados)
+                    
+                    if st.button("Confirmar Eliminación Por Condición", key="confirmar_cond"):
+                        resultado = eliminar_por_condicion(
+                            dataset_seleccionado,
+                            valor_condicion,
+                            columna_condicion,
+                            operador
+                        )
+                        st.session_state["mensaje_eliminacion"] = resultado
+                        st.rerun()
+                else:
+                    st.warning("No hay registros que cumplan esa condición")
+                    
+            except Exception as e:
+                st.error(f"Error al evaluar la condición: {e}")
+        else:
+            st.info("Completá la columna, operador y valor para la vista previa")
             
 except Exception as error:
     st.error(f"Error al cargar el dataset '{dataset_seleccionado}': {error}")

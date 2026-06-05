@@ -11,7 +11,7 @@ from core.ejercicio3_validaciones import (
 from core.ejercicio7_registro_de_operaciones import registrar_operacion_en_log
 
 #------6a------
-def eliminar_por_id(dataset: str, id_buscado: str) -> str:
+def eliminar_por_id(dataset: str, id_buscado: str, columna_id: str = "occurrenceID") -> str:
     """
     Elimina el registro cuyo occurrenceID coincida con el id buscado.
     Implementa 7.E (éxito) y 7.F (errores).
@@ -20,7 +20,7 @@ def eliminar_por_id(dataset: str, id_buscado: str) -> str:
     ruta, separador = obtener_ruta_y_separador(dataset)
     indices = obtener_indices_columnas(dataset)
 
-    indice_id = indices.get('occurrenceID') 
+    indice_id = indices.get(columna_id) 
     
     if indice_id is None:
         # ----7f: Error por falta de columna identificadora
@@ -76,7 +76,7 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
     if indice_columna is None:
         return 'No existe esa columna'
 
-    lista_suministrada = [elemento.strip() for elemento in lista_suministrada]
+    lista_suministrada = [str(elemento).strip() for elemento in lista_suministrada]
     ruta_carpeta_procesada = obtener_ruta_processed(dataset)
 
     # Cambiamos el booleano por un contador para cumplir mejor el Punto 7.E
@@ -91,7 +91,7 @@ def eliminar_por_lista_suministrada(dataset: str, lista_suministrada: list[str],
             escritor.writerow(encabezado)
 
             for fila in lector:
-                if indice_columna < len(fila) and fila[indice_columna].strip() in lista_suministrada:
+                if indice_columna < len(fila) and str(fila[indice_columna]).strip() in lista_suministrada:
                     cantidad_eliminados += 1 # Contamos cada eliminación
                     continue  # Saltea si esta en la lista
                 escritor.writerow(fila)
