@@ -53,9 +53,7 @@ if df is not None:
         st.info("No se encontraron datos geográficos suficientes en este dataset para generar el gráfico.")
 
     # ------------------ Punto 3b ----------------------
-    st.markdown("--------")
-    st.header("Evolución temporal de registros por anio(3B)")
-
+    
     st.markdown("--------")
     st.header("Evolución temporal de registros por anio(3B)")
 
@@ -212,7 +210,83 @@ if df is not None:
         st.error(f"No se pudieron calcular los nulos: {diccionario_nulos}")
 
 
+#-------------Ejercicio 3E------------------------------
 
+    st.markdown("--------")
+    st.header("Tabla Comparativa de los Datasets (3E)")
+
+    lista_datasets = ["IADIZA", "XenoCanto", "Inaturalist"]
+
+    filas_tabla = []
+
+    for name_ds in lista_datasets:
+        try:
+            #  Cargamos el dataset actual usando la función de carga 
+            #  usamos una carga temporal para extraer los datos de la tabla comparativa
+            df_temp = cargar_dataset_procesado(name_ds)
+
+            if df_temp is not None and not df_temp.empty:
+                total_reg = len(df_temp)
+                #  Calculamos porcentaje de coordenadas válidas
+            
+                # Un registro es válido si ambas coordenadas no son nulas 
+                coor_validas = 0
+                if 'decimalLatitude' in df_temp.columns and 'decimalLongitude' in df_temp.columns:
+                    for lat, lon in zip(df_temp['decimalLatitude'], df_temp['decimalLongitude']):
+                        if (not pd.isna(lat) and str(lat).strip() not in ["None", "nan", ""]) and \
+                           (not pd.isna(lon) and str(lon).strip() not in ["None", "nan", ""]):
+                            coor_validas += 1
+                porc_coor = (coor_validas / total_reg) * 100 if total_reg > 0 else 0.0
+
+
+                # Calculamos el  porcentaje de fechas válidas
+                # Usamos la misma lógica del 3B, si tiene año en eventDate o en 'year'
+                fechas_validas = 0
+                tiene_col_year = 'year' in df_temp.columns
+                
+                for i, celda in enumerate(df_temp['eventDate']):
+                    es_valido = False
+                    if not pd.isna(celda) and str(celda).strip() not in ["None", "nan", "<NA>", ""]:
+                        try:
+                            int(str(celda)[:4])
+                            es_valido = True
+                        except:
+                            pass
+                    if not es_valido and tiene_col_year:
+                        val_year = df_temp['year'].iloc[i]
+                        if not pd.isna(val_year) and str(val_year).strip() not in ["None", "nan", "", "0"]:
+                            try:
+                                int(float(val_year))
+                                es_valido = True
+                            except:
+                                pass
+                    if es_valido:
+                        fechas_validas += 1
+                        
+                porc_fechas = (fechas_validas / total_reg) * 100 if total_reg > 0 else 0.0
+
+                #  Guardamos los resultados formateados en un diccionario 
+                filas_tabla.append({
+                    "Dataset": name_ds,
+                    "Cantidad de Registros": f"{total_reg:,}".replace(",", "."), # Formato con punto de miles
+                    "Coordenadas Válidas (%)": f"{porc_coor:.2f}%",
+                    "Fechas Válidas (%)": f"{porc_fechas:.2f}%"
+                })
+        except Exception as e:
+            # Si algún dataset falla en cargarse, no rompemos la app, solo avisamos
+            pass
+
+    # Si logramos recolectar datos, armamos el DataFrame básico y lo mostramos
+    if filas_tabla:
+        df_comparativo = pd.DataFrame(filas_tabla)
+        
+        # Seteamos el nombre del dataset como el índice para que la tabla quede súper limpia
+        df_comparativo.set_index("Dataset", inplace=True)
+        
+        # st.table() muestra una tabla e sencilla y sin barras de scroll 
+        st.table(df_comparativo)
+    else:
+        st.warning("No hay suficientes datasets procesados disponibles para mostrar la tabla comparativa.")
 
 
 
