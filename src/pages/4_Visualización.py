@@ -272,18 +272,32 @@ if df is not None:
                         
                 porc_fechas = (fechas_validas / total_reg) * 100 if total_reg > 0 else 0.0
 
+                #aca calculamos la columna de porcentaje de campos completados:
+                # Pasamos todo el df a texto limpio para detectar vacíos 
+                df_string = df_temp.astype(str).apply(lambda x: x.str.strip())
+                
+                # Contamos las celdas que NO son nulas ni textos vacíos comunes
+                celdas_validas = ((~df_temp.isna()) & 
+                                  (df_string != "") & 
+                                  (df_string != "None") & 
+                                  (df_string != "nan")).sum().sum()
+                
+                total_celdas = total_reg * len(df_temp.columns)
+                porc_promedio_completitud = (celdas_validas / total_celdas) * 100 if total_celdas > 0 else 0.0
+
                 #  Guardamos los resultados formateados en un diccionario 
                 filas_tabla.append({
                     "Dataset": name_ds,
                     "Cantidad de Registros": f"{total_reg:,}".replace(",", "."), # Formato con punto de miles
                     "Coordenadas Válidas (%)": f"{porc_coor:.2f}%",
-                    "Fechas Válidas (%)": f"{porc_fechas:.2f}%"
+                    "Fechas Válidas (%)": f"{porc_fechas:.2f}%",
+                    "Campos Completos Promedio (%)": f"{porc_promedio_completitud:.2f}%"
                 })
         except Exception as e:
             # Si algún dataset falla en cargarse, no rompemos la app, solo avisamos
             pass
 
-    # Si logramos recolectar datos, armamos el DataFrame básico y lo mostramos
+    # Si logramos recolectar datos, armamos el DataFrame y lo mostramos
     if filas_tabla:
         df_comparativo = pd.DataFrame(filas_tabla)
         
@@ -294,12 +308,6 @@ if df is not None:
         st.table(df_comparativo)
     else:
         st.warning("No hay suficientes datasets procesados disponibles para mostrar la tabla comparativa.")
-
-
-
-
-
-
 
 # ---------- Si no se pudo cargar el dataset ----------
 
