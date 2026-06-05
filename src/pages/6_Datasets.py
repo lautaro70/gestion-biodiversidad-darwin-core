@@ -20,6 +20,9 @@ st.title("Exploración de datasets")
 def obtener_info_datasets():
     
     datos = []
+    
+    # Ordenamos alfabéticamente para mantener
+    # una visualización consistente.
 
     for nombre in sorted(DATASETS.keys()):
 
@@ -104,6 +107,9 @@ df_nulos.columns = [
     "% Nulos"
 ]
 
+# Mostramos primero las columnas con
+# mayor porcentaje de datos faltantes.
+
 df_nulos = df_nulos.sort_values(
     by="% Nulos",
     ascending=False
@@ -158,6 +164,9 @@ for nombre_dataset in DATASETS.keys():
             None
         )
         
+        # Si el dataset no posee coordenadas cargadas,
+        # se muestra "-" en la tabla comparativa según
+        # el criterio definido por la cátedra.
         
         if (
             col_lat and col_lon
@@ -174,7 +183,10 @@ for nombre_dataset in DATASETS.keys():
 
                 if pd.isna(latitud) or pd.isna(longitud):
                     continue
-
+                
+                # Reutilizamos la validación oficial
+                # implementada en ejercicios anteriores.
+                
                 es_valido, _ = validar_par_coordenadas(
                     latitud,
                     longitud
@@ -196,6 +208,9 @@ for nombre_dataset in DATASETS.keys():
         # Fechas válidas
         # ------------------------
 
+        # Cuando no existen fechas disponibles,
+        # la métrica no se calcula y se visualiza "-".
+        
         if (
             "eventDate" in df.columns
             and df["eventDate"].notna().sum() > 0
@@ -223,6 +238,9 @@ for nombre_dataset in DATASETS.keys():
         # Campos completos
         # ------------------------
 
+        # La completitud se calcula considerando
+        # todos los campos no nulos del dataset.
+        
         total_celdas = (
             df.shape[0] *
             df.shape[1]
@@ -271,6 +289,9 @@ for nombre_dataset in DATASETS.keys():
 
         })
 
+# Consolidamos todas las métricas en una
+# única tabla comparativa.
+
 df_comparacion = pd.DataFrame(
     datos_comparacion
 )
@@ -286,6 +307,11 @@ st.dataframe(
 st.divider()
 
 st.header("5.D - Documentación")
+
+
+# Se muestran automáticamente todos los
+# archivos Markdown presentes en la carpeta
+# documentation generada durante la etapa 1.
 
 ruta_documentacion = (
     Path(__file__).resolve().parent.parent.parent
@@ -310,6 +336,8 @@ else:
         for archivo in archivos_md
     ]
 
+    # El usuario puede elegir qué documento desea consultar.
+    
     archivo_seleccionado = st.selectbox(
         "Seleccione un documento:",
         nombres_archivos
