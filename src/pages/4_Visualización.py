@@ -91,6 +91,8 @@ if df is not None:
         st.info(f"ℹ️ Se procesaron correctamente los registros del rango seleccionado.")
     else:
         st.info("No hay registros con fechas válidas en el rango de años seleccionado. Probá moviendo el slider a otros años.")
+
+
     # --------------- punto 3c ---------------------
     st.markdown("----------")
     st.header("Distribución por Nivel Taxonómico (3C)")
@@ -107,26 +109,31 @@ if df is not None:
     )
 # Agarramos el valor de la categoria elegida
     columna_elegida = opciones_taxo[seleccion_usuario]
-    datos_taxo = obtener_datos_taxonomia(df, columna_elegida)# Llamada a la funcion
+
+    if columna_elegida in df.columns: #Agrego esto porque en el caso de xenocanto no tiene clases, entonces para que no explote lo encerramos en el if
+        datos_taxo = obtener_datos_taxonomia(df, columna_elegida)# Llamada a la funcion
 
 # Comenzamos con el armado del grafico
-    if not datos_taxo.empty:
-        top_datos = datos_taxo.head(15)# Ponemos solo 15 elementos para que no quede gigante el grafico
-        fig3, ax3 = plt.subplots(figsize=(10, 6))# Creamos el grafico de barras
-        # Dibujamos las barras y les damos color
-        ax3.bar(top_datos.index, top_datos.values, color='#45aaf2', edgecolor='black')
-        # Ponemos el titulo junto con sus etiquetas
-        ax3.set_title(f"Top 15 - Distribución de Registros por {seleccion_usuario}", fontsize=14, fontweight='bold')
-        ax3.set_xlabel(seleccion_usuario, fontsize=12)
-        ax3.set_ylabel("Cantidad de Registros", fontsize=12)
-        plt.xticks(rotation=45, ha='right')# Rotamos las etiquetas en 45 para que no se superpongan
-        plt.tight_layout()# Mostramos en streamlit
-        st.pyplot(fig3)
+        if not datos_taxo.empty:
+            top_datos = datos_taxo.head(15)# Ponemos solo 15 elementos para que no quede gigante el grafico
+            fig3, ax3 = plt.subplots(figsize=(10, 6))# Creamos el grafico de barras
+            # Dibujamos las barras y les damos color
+            ax3.bar(top_datos.index, top_datos.values, color='#45aaf2', edgecolor='black')
+            # Ponemos el titulo junto con sus etiquetas
+            ax3.set_title(f"Top 15 - Distribución de Registros por {seleccion_usuario}", fontsize=14, fontweight='bold')
+            ax3.set_xlabel(seleccion_usuario, fontsize=12)
+            ax3.set_ylabel("Cantidad de Registros", fontsize=12)
+            plt.xticks(rotation=45, ha='right')# Rotamos las etiquetas en 45 para que no se superpongan
+            plt.tight_layout()# Mostramos en streamlit
+            st.pyplot(fig3)
 
-        if len(datos_taxo) > 15:# Aca avisamos que solo mostramos las primeras 15
-            st.info(f"ℹ️ Mostrando las 15 categorías más frecuentes de un total de {len(datos_taxo)} encontradas.")
+            if len(datos_taxo) > 15:# Aca avisamos que solo mostramos las primeras 15
+                 st.info(f"ℹ️ Mostrando las 15 categorías más frecuentes de un total de {len(datos_taxo)} encontradas.")
+        else:
+             st.info(f"No se encontraron datos para el nivel taxonómico {seleccion_usuario}.")
     else:
-         st.info(f"No se encontraron datos para el nivel taxonómico {seleccion_usuario}.")
+        # Si el dataset no tiene la columna (como le pasa a XenoCanto con 'class'), mostramos este cartel
+        st.warning(f"⚠️ El dataset seleccionado no cuenta con la información de la columna '{columna_elegida}' para el nivel '{seleccion_usuario}'.")
 
 #-----------------Punto 3d-------------------
 
