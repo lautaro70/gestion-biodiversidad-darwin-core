@@ -21,7 +21,9 @@ def obtener_info_datasets():
     
     datos = []
 
-    for nombre, info in DATASETS.items():
+    for nombre in sorted(DATASETS.keys()):
+
+        info = DATASETS[nombre]
 
         ruta = info["path"]
 
@@ -328,7 +330,8 @@ else:
 
             contenido = archivo.read()
 
-        st.markdown(contenido)
+        with st.expander("Ver documentación completa"):
+            st.markdown(contenido)
 
     except Exception as e:
 
