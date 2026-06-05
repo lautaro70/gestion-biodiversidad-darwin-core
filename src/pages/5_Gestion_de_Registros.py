@@ -331,12 +331,18 @@ try:
                     valor_comparacion = float(valor_condicion)
                 except ValueError:
                     valor_comparacion = valor_condicion
+
+                # Si es float pero entero (ej: 17063.0), lo convertimos a int para comparar bien
+                if isinstance(valor_comparacion, float) and valor_comparacion.is_integer():
+                    valor_str = str(int(valor_comparacion))
+                else:
+                    valor_str = str(valor_comparacion)
                 
                 # Aplicar operador
                 if operador == "==":
-                    cumple = datos[columna_condicion].astype(str) == str(valor_comparacion)
+                    cumple = datos[columna_condicion].astype(str) == valor_str
                 elif operador == "!=":
-                    cumple = datos[columna_condicion].astype(str) != str(valor_comparacion)
+                    cumple = datos[columna_condicion].astype(str) != valor_str
                 elif operador == ">":
                     cumple = pd.to_numeric(datos[columna_condicion], errors='coerce') > valor_comparacion
                 elif operador == ">=":
