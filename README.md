@@ -123,13 +123,18 @@ El sistema cuenta con una barra lateral (Sidebar) de configuración que permite 
 * **processed_datasets/**: Datos validados y procesados por el sistema.
 * **logs/**: Registros de operaciones del sistema.
 * **src/**: Código fuente del proyecto.
-    * **Inicio.py**: Página principal de la aplicación Streamlit.
-    * **pages/**: Páginas secundarias (Estado del sistema, Búsqueda, Visualización).
     * **core/**: Lógica de procesamiento y validaciones.
     * **common/**: Funciones auxiliares y constantes.
     * **notebooks/**: Desarrollo y pruebas de los ejercicios en formato .ipynb.
     **web/**: (Etapa 2). Funciones relacionadas a la página web
+        **pages/**: Páginas secundarias (Estado del sistema, Búsqueda, Visualización).
+        **components/**: Componentes reutilizables de la interfaz (sidebar, bloques).
+        **utils/**: Funciones auxiliares específicas de la aplicación web.
+        **Inicio.py**: Página principal de la aplicación Streamlit.   
 * **requirements.txt**: Lista de bibliotecas necesarias para el proyecto.
+* **.gitignore**: Archivos y carpetas excluidos del control de versiones.
+* **LICENSE**: Licencia MIT del proyecto.
+* **README.md**: Documentación principal, instrucciones de instalación y uso.
 
 ### Configuración Centralizada y Rutas (DRY)
 
