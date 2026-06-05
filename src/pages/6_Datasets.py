@@ -102,6 +102,11 @@ df_nulos.columns = [
     "% Nulos"
 ]
 
+df_nulos = df_nulos.sort_values(
+    by="% Nulos",
+    ascending=False
+)
+
 st.dataframe(
     df_nulos,
     use_container_width=True
