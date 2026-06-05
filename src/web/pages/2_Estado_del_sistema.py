@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from common.dataset_utils import leer_logs
-from web.barra_lateral import renderizar_barra_lateral
+from components.barra_lateral import renderizar_barra_lateral
 
 # Llamo a la funcion para que el selector quede guardado (Punto 1.B)
 renderizar_barra_lateral()

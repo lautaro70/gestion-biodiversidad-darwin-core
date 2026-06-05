@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from datetime import date, datetime
-from web.barra_lateral import renderizar_barra_lateral
-from web.carga_datasets import cargar_dataset_procesado
+from components.barra_lateral import renderizar_barra_lateral
+from utils.carga_datasets import cargar_dataset_procesado
 from core.ejercicio4_insercion_registros import insertar_registro_desde_diccionario
 from core.ejercicio5_actualizacion_registros import buscar_registros
 from core.ejercicio5_actualizacion_registros import actualizar_multiples_campos_validado

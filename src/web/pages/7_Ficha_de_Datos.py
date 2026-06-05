@@ -1,10 +1,10 @@
 import streamlit as st
-from web.barra_lateral import renderizar_barra_lateral
+from components.barra_lateral import renderizar_barra_lateral
 import folium
 from streamlit_folium import st_folium
 import pandas as pd
 import os
-from web.DataFrameCoordenadas6b import obtener_columnas_coordenadas,obtener_registros_validos_para_mapa,obtener_criterios_coloreo,crear_mapa_folium,mostrar_multimedia
+from utils.DataFrameCoordenadas6b import obtener_columnas_coordenadas,obtener_registros_validos_para_mapa,obtener_criterios_coloreo,crear_mapa_folium,mostrar_multimedia
 
 
 st.set_page_config(page_title="Ficha de datos")

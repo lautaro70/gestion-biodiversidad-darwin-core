@@ -1,5 +1,14 @@
+import sys
+from pathlib import Path
+
+# Agrega la carpeta 'src' a su mapa de búsqueda de módulos
+ruta_src = str(Path(__file__).resolve().parent.parent)
+
+if ruta_src not in sys.path:
+    sys.path.append(ruta_src)
+
 import streamlit as st
-from web.barra_lateral import renderizar_barra_lateral
+from components.barra_lateral import renderizar_barra_lateral
 
 st.set_page_config(page_title="Aplicacion Biodiversidad grupo 47")
 st.title("Aplicacion Biodiversidad - Grupo 47")

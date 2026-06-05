@@ -3,8 +3,8 @@ import pandas as pd
 from datetime import datetime
 
 from common.constants import PROCESSED_DATASETS
-from web.barra_lateral import renderizar_barra_lateral
-from web.carga_datasets import cargar_dataset_procesado
+from components.barra_lateral import renderizar_barra_lateral
+from utils.carga_datasets import cargar_dataset_procesado
 from core.ejercicio3_validaciones import validar_par_coordenadas
 from pathlib import Path
 
@@ -313,7 +313,7 @@ st.header("5.D - Documentación")
 # documentation generada durante la etapa 1.
 
 ruta_documentacion = (
-    Path(__file__).resolve().parent.parent.parent
+    Path(__file__).resolve().parent.parent.parent.parent
     / "documentation"
 )
 

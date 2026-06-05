@@ -1,7 +1,7 @@
 import streamlit as st
 from common.constants import PROCESSED_DATASETS
 import pandas as pd
-from web.carga_datasets import cargar_dataset_procesado
+from utils.carga_datasets import cargar_dataset_procesado
 
 def renderizar_barra_lateral():
     """Dibuja el selector y las métricas en tiempo real.
