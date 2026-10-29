@@ -58,7 +58,7 @@ try:
 
         if st.button("Ver ficha"):
             st.session_state["resultados_busqueda"] = (df_filtrado_combinado.copy())
-            st.switch_page("pages/7_Ficha_de_datos.py")
+            st.switch_page("pages/7_Ficha_de_Datos.py")
     #termina el 6a
 
 except Exception as e:
