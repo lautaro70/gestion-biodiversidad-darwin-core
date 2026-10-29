@@ -1,159 +1,185 @@
-# Proyecto de Gestión de Biodiversidad - Grupo 47
+# Gestión de Biodiversidad · Darwin Core
+
+Aplicación en **Python + Streamlit** para validar, explorar y visualizar datos reales de biodiversidad publicados bajo el estándar **Darwin Core (DwC)**.
+
+Trabajo Integrador de **Taller de Lenguajes (Seminario de Lenguajes – Opción Python) 2026**, Licenciatura en Ciencia de Datos en Organizaciones, UNLP. Grupo 47.
+
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.57-FF4B4B?logo=streamlit&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-3.0-150458?logo=pandas&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-3.10-11557C)
+![Folium](https://img.shields.io/badge/Folium-0.20-77B829)
+
+![Visualización de registros por provincia](documentation/img/visualizacion.png)
 
 ## Integrantes
+
 * **Bellocq Catalina**
 * **Bof Máximo Dante**
 * **Mascetti Augusto**
 * **Pennetta Lautaro**
 * **Suarez Franco**
 
+## De qué se trata
+
 Este proyecto es una herramienta diseñada para la gestión, validación y exploración de datos biológicos utilizando el estándar **Darwin Core (DwC)**. Permite procesar datasets y visualizar logs de operaciones a través de una interfaz interactiva.
 
 El objetivo principal es resolver los problemas típicos de los datos provenientes del mundo real (registros corruptos, coordenadas fuera de rango, fechas inconsistentes y datos taxonómicos incompletos) mediante un procesamiento por lotes eficiente que cuida el consumo de memoria RAM. La herramienta implementa:
-*   **Lectura y Análisis Estructural**: Exploración agnóstica de archivos del dataset (`.txt` y `.csv`) calculando métricas de completitud sin sobrecargar el sistema.
-*   **Validación Crítica de Calidad**: Control estricto de coordenadas geográficas globales y cotas regionales específicas para América del Sur, detección de duplicados e inconsistencias temporales.
-*   **Persistencia Inmutable**: Los archivos originales en formato crudo nunca se modifican; todas las operaciones de saneamiento generan nuevas versiones limpias orientadas a la producción.
-*   **Auditoría (Logging)**: Registro detallado y cronológico de cada transacción para asegurar la trazabilidad del sistema.
-*   **Interfaz Web Interactiva (Etapa 2)**: Aplicación desarrollada en Streamlit que integra los datos procesados, ofreciendo dashboards estadísticos, mapas interactivos y un sistema CRUD (Crear, Leer, Actualizar, Borrar) para la gestión de datos en tiempo real.
 
-## Descarga de Datasets
-Para replicar los análisis y ejecutar la plataforma, es necesario descargar los conjuntos de datos oficiales provistos por la cátedra, los cuales corresponden a muestras adaptadas de las siguientes fuentes:
+* **Lectura y análisis estructural**: exploración de los archivos del dataset (`.txt` y `.csv`) calculando métricas de completitud sin sobrecargar el sistema.
+* **Validación de calidad**: control de coordenadas geográficas globales y cotas regionales específicas para América del Sur, detección de duplicados e inconsistencias temporales.
+* **Persistencia inmutable**: los archivos originales nunca se modifican; todas las operaciones de saneamiento generan nuevas versiones limpias.
+* **Auditoría (logging)**: registro detallado y cronológico de cada operación para asegurar la trazabilidad del sistema.
+* **Interfaz web interactiva (Etapa 2)**: aplicación desarrollada en Streamlit que integra los datos procesados, con dashboards estadísticos, mapas interactivos y un sistema CRUD (crear, leer, actualizar y borrar) para gestionar los datos en tiempo real.
 
-1. **IADIZA**: Registros de ocurrencias biológicas.
-2. **Xeno-canto**: Grabaciones y registros de aves.
-3. **iNaturalist**: Observaciones de biodiversidad ciudadana[cite: 7].
+![Búsqueda con resultados paginados](documentation/img/busqueda.png)
 
-**Enlace Oficial de Descarga:** 
-Todos los datasets comprimidos deben ser descargados de forma obligatoria desde el servidor de la facultad en el siguiente enlace:
+## Descarga de datasets
+
+Los datasets **no están incluidos en el repositorio** por su tamaño. Para ejecutar la aplicación hay que descargar los conjuntos de datos provistos por la cátedra, que corresponden a muestras adaptadas de estas fuentes:
+
+1. **IADIZA**: registros de ocurrencias biológicas.
+2. **Xeno-canto**: grabaciones y registros de aves.
+3. **iNaturalist**: observaciones de biodiversidad ciudadana.
+
+**Enlace de descarga (servidor de la facultad):**
 https://archivos.linti.unlp.edu.ar/index.php/s/rPG30E5wUwy6Xbo
 
-## Configuración del Entorno
-Para asegurar que el software funcione correctamente en Windows, Linux o Mac, siga estos pasos para configurar el entorno virtual e instalar las dependencias.
+## Configuración del entorno
 
-### Requisitos del Sistema
-Para asegurar la compatibilidad, este proyecto fue desarrollado y testeado bajo las siguientes versiones:
-* **Python**: 3.13.12
-* **Streamlit**: 1.57.0
-* **Jupyter**: para la ejecución de los notebooks en 'src/notebooks/'.
+### Requisitos
 
-### Preparación de los Datos
-Para que el procesamiento de los Notebooks y la aplicación funcionen correctamente, debe preparar los archivos de datos siguiendo estos pasos:
+El proyecto fue desarrollado y probado con:
 
-1. **Ubicación**: Coloque los datasets originales dentro de la carpeta `raw_datasets/`.
-2. **Descompresión**: Si los archivos se encuentran en formato `.zip`, descomprímalos en dicha carpeta.
-3. **Renombrado y Estructura**: Para que las rutas del sistema localicen los datos, las carpetas dentro de `raw_datasets/` deben mantener la siguiente estructura y nombres exactos (respetando mayúsculas):
-    * **IADIZA**: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/` (Debe contener `occurrence.txt`).
-   * **iNaturalist**: `raw_datasets/Inaturalist/Inaturalist/` (Debe contener `observations.csv`).
-   * **Xeno-Canto**: `raw_datasets/XenoCanto/XenoCanto/` (Debe contener `Occurrence.txt` -> *la O mayúscula).
+* **Python** 3.13.12
+* **Streamlit** 1.57.0
+* **Jupyter**, para ejecutar los notebooks de `src/notebooks/`
 
-*Nota: Se recomienda verificar que los nombres de los archivos internos coincidan exactamente con los mencionados, ya que el sistema es sensible a mayúsculas y minúsculas (Case Sensitive).*
+### Preparación de los datos
 
-### Creación del entorno virtual (Virtualenv)
-Desde la carpeta raíz del proyecto (`code/`), ejecute:
+1. **Ubicación**: coloque los datasets originales dentro de la carpeta `raw_datasets/`.
+2. **Descompresión**: si los archivos están en formato `.zip`, descomprímalos en esa carpeta.
+3. **Estructura y nombres**: para que el sistema encuentre los datos, las carpetas dentro de `raw_datasets/` deben tener esta estructura y estos nombres exactos (respetando mayúsculas):
+   * **IADIZA**: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/` (debe contener `occurrence.txt`).
+   * **iNaturalist**: `raw_datasets/Inaturalist/Inaturalist/` (debe contener `observations.csv`).
+   * **Xeno-canto**: `raw_datasets/XenoCanto/XenoCanto/` (debe contener `Occurrence.txt`, con la O mayúscula).
 
-**Windows:**
-Bash
+*Nota: el sistema distingue mayúsculas de minúsculas en los nombres de archivos.*
+
+Los datos validados se generan en `processed_datasets/` con las funciones de la Etapa 1 (ver `Ejercicio4.ipynb`), y son los que usa la aplicación.
+
+### Creación y activación del entorno virtual
+
+Desde la carpeta raíz del proyecto:
+
+**Windows**
+
+```powershell
 python -m venv .venv
-
-**Linux/Mac:**
-python3 -m venv .venv
-
-### Activación del entorno
-**Windows:**
-Bash
 .venv\Scripts\activate
+```
 
-**Linux/Mac:**
+**Linux / Mac**
+
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
+```
 
 ### Instalación de dependencias
-Con el entorno activado, instale las bibliotecas necesarias detalladas en el archivo requirements.txt:
 
-Bash
+Con el entorno activado:
+
+```bash
 pip install -r requirements.txt
+```
 
-#### Contenido de los Notebooks:
-**ejercicio2.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio2_lectura_dataset.py
-**ejercicio3.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio3_validaciones.py
-**ejercicio4.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio4_insercion_registros.py
-**ejercicio5.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio5_actualizacion_registros.py
-**ejercicio6.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio6_eliminacion_registros.py
-**ejercicio7.ipynb**: Incluye las pruebas de las funciones del archivo ejercicio7_registro_de_operaciones.py
+## Notebooks (Etapa 1)
 
-#### Instrucciones detalladas de ejecución:
-**Opción A: Desde Visual Studio Code (Recomendado)**
-1. Abra VS Code en la carpeta raíz del proyecto (`code/`).
-2. Instale la extensión oficial de **Jupyter** en VS Code si aún no la tiene.
-3. Navegue en el explorador de archivos y abra `src/notebooks/ejercicio_3.ipynb`.
-4. En la esquina superior derecha del editor, haga clic en **Select Kernel** y asegúrese de elegir la ruta del entorno virtual del proyecto (`.venv`).
-5. Ejecute las celdas secuencialmente haciendo clic en el botón de "Play" al lado de cada una.
+| Notebook | Contenido |
+|----------|-----------|
+| `Ejercicio2.ipynb` | Pruebas de las funciones de `ejercicio2_lectura_dataset.py` |
+| `Ejercicio3.ipynb` | Pruebas de las funciones de `ejercicio3_validaciones.py` |
+| `Ejercicio4.ipynb` | Pruebas de las funciones de `ejercicio4_insercion_registros.py` |
+| `Ejercicio5.ipynb` | Pruebas de las funciones de `ejercicio5_actualizacion_registros.py` |
+| `Ejercicio6.ipynb` | Pruebas de las funciones de `ejercicio6_eliminacion_registros.py` |
+| `Ejercicio7.ipynb` | Pruebas de las funciones de `ejercicio7_registro_de_operaciones.py` |
 
-**Opción B: Desde la Terminal clásica**
-1. Asegúrese de tener el entorno virtual activado en su terminal.
-2. Instale la interfaz ejecutando: `pip install notebook` (solo si no dispone de ella).
-3. Inicie el servidor local corriendo: `jupyter notebook`
-4. Se abrirá una interfaz en su navegador web. Ingrese a la carpeta `src/notebooks/` y abra el archivo deseado.
+**Opción A: desde Visual Studio Code (recomendado)**
 
-### Aplicación Interactiva (Streamlit)
-La aplicación web centraliza todas las funcionalidades en una interfaz gráfica. Para iniciarla, ejecute el siguiente comando desde la raíz del proyecto:
+1. Abra VS Code en la carpeta raíz del proyecto.
+2. Instale la extensión oficial de **Jupyter** si aún no la tiene.
+3. Abra, por ejemplo, `src/notebooks/Ejercicio3.ipynb`.
+4. En la esquina superior derecha, haga clic en **Select Kernel** y elija el entorno virtual del proyecto (`.venv`).
+5. Ejecute las celdas en orden.
 
-Bash
-streamlit run src/Inicio.py
+**Opción B: desde la terminal**
 
-Una vez ejecutado, se abrirá automáticamente una pestaña en su navegador (generalmente en http://localhost:8501) donde podrá navegar por las páginas de:
+```bash
+pip install notebook
+jupyter notebook
+```
 
-El sistema cuenta con una barra lateral (Sidebar) de configuración que permite seleccionar el dataset a utilizar, manteniendo su estado persistente entre páginas y mostrando métricas en tiempo real de la selección. La aplicación se divide en las siguientes secciones:  
-    * **Inicio (P1)** *: Información general del proyecto, el grupo y el estándar Darwin Core.
-    
-    * **Estado del Sistema (P2)** *: Lector avanzado de auditoría (operations.log) con métricas resumidas y filtros interactivos por tipo de operación (INSERT, UPDATE, DELETE, ERROR) y rango de fechas.  
-    
-    * **Búsqueda (P3)** *: Motor de búsqueda con filtros combinables (texto libre, nombre científico, observador, país, provincia y rango de fechas) . Los resultados se presentan en una tabla dinámica con paginación, resúmenes estadísticos del filtrado y la opción de exportar el subconjunto a CSV.  
-    
-    * **Visualización (P4)** *: Dashboards estadísticos que incluyen gráficos de distribución por país/provincia, series temporales por año de observación, distribución por nivel taxonómico y análisis de completitud (valores nulos) de las columnas.  
-    
-    * **Gestión de Registros (P5)** *: Interfaz transaccional que permite insertar nuevos registros, buscar ocurrencias por identificador para actualizarlas, o eliminar datos mediante condiciones lógicas (==, >, <, etc.). Todas las operaciones validan los datos en vivo y alteran el dataset procesado.  
-    
-    * **Exploración de Datasets (P6)** *: Vista global e independiente del sidebar que compara todos los datasets del sistema. Permite analizar el peso en disco, el porcentaje de coordenadas válidas y renderizar directamente en la web los manuales creados en formato Markdown.  
-    
-    * **Ficha de Datos (P7)** *: Accesible dinámicamente desde la página de Búsqueda. Plotea las ocurrencias en un mapa geográfico interactivo (Folium) y expone una ficha técnica con la evidencia multimedia asociada a cada registro, como pistas de audio para Xeno-Canto y fotografías para iNaturalist. 
+Se abrirá una pestaña en el navegador: ingrese a `src/notebooks/` y abra el notebook deseado.
 
-### Estructura del Proyecto:
-* **documentation/**: Análisis y descripción de los datasets originales (Ejercicio 1).
-* **raw_datasets/**: Almacenamiento de los archivos .csv originales.
-* **processed_datasets/**: Datos validados y procesados por el sistema.
-* **logs/**: Registros de operaciones del sistema.
-* **src/**: Código fuente del proyecto.
-    * **core/**: Lógica de procesamiento y validaciones.
-    * **common/**: Funciones auxiliares y constantes.
-    * **notebooks/**: Desarrollo y pruebas de los ejercicios en formato .ipynb.
-    **web/**: (Etapa 2). Funciones relacionadas a la página web
-        **pages/**: Páginas secundarias (Estado del sistema, Búsqueda, Visualización).
-        **components/**: Componentes reutilizables de la interfaz (sidebar, bloques).
-        **utils/**: Funciones auxiliares específicas de la aplicación web.
-        **Inicio.py**: Página principal de la aplicación Streamlit.   
-* **requirements.txt**: Lista de bibliotecas necesarias para el proyecto.
-* **.gitignore**: Archivos y carpetas excluidos del control de versiones.
-* **LICENSE**: Licencia MIT del proyecto.
-* **README.md**: Documentación principal, instrucciones de instalación y uso.
+## Aplicación interactiva (Streamlit)
 
-### Configuración Centralizada y Rutas (DRY)
+Desde la raíz del proyecto, con el entorno activado:
 
-Para evitar la repetición de código y asegurar la consistencia en todo el proyecto (Notebooks y Aplicación), se utiliza un archivo de configuración centralizado ubicado en `src/common/constants.py`.
+```bash
+streamlit run src/web/Inicio.py
+```
 
-### Constantes Globales y Estructura Restrictiva
-El sistema se rige por las siguientes definiciones constantes que **deben respetarse** para el correcto funcionamiento:
+Se abrirá una pestaña en el navegador (normalmente en `http://localhost:8501`).
 
-* **BASE_DIR**: Se calcula dinámicamente usando `pathlib`, garantizando que las rutas funcionen de forma relativa a la raíz del proyecto en cualquier sistema operativo.
-* **LOG_PATH**: logs/operations.log — Ubicación única para el registro de auditoría del sistema, se crea automático al ejecutar la celda que inicializa el archivo.
-* **DATASETS**: Diccionario que centraliza la ubicación y el formato de los datos:
-    * **IADIZA**: Ruta: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/occurrence.txt` | Separador: `\t` (Tabulación).
-    * **Inaturalist**: Ruta: `raw_datasets/Inaturalist/Inaturalist/observations.csv` | Separador: `,` (Coma).
-    * **XenoCanto**: Ruta: `raw_datasets/XenoCanto/XenoCanto/Occurrence.txt` | Separador: `,` (Coma).
+La aplicación tiene una barra lateral para elegir el dataset con el que se trabaja, que mantiene la selección entre páginas y muestra métricas de ese dataset. Las secciones son:
 
-**PROCESSED_DATASETS**: Diccionario que centraliza la ubicación de los datos limpios y validados generados tras la Etapa 1. Todos se exportan estandarizados en formato `.csv`:
-    * **IADIZA**: Ruta: `processed_datasets/IADIZA/IADIZA_processed.csv` | Separador: `\t` (Tabulación).
-    * **Inaturalist**: Ruta: `processed_datasets/Inaturalist/Inaturalist_processed.csv` | Separador: `,` (Coma).
-    * **XenoCanto**: Ruta: `processed_datasets/XenoCanto/XenoCanto_processed.csv` | Separador: `,` (Coma).
+* **Inicio (P1)**: información general del proyecto, el grupo y el estándar Darwin Core.
+* **Estado del sistema (P2)**: lector del registro de auditoría (`operations.log`), con métricas resumidas y filtros por tipo de operación (INSERT, UPDATE, DELETE, ERROR) y rango de fechas.
+* **Búsqueda (P3)**: búsqueda con filtros combinables (texto libre, nombre científico, observador, país, provincia y rango de fechas). Los resultados se muestran en una tabla paginada, con un resumen del filtrado y la opción de exportarlos a CSV.
+* **Visualización (P4)**: gráficos de distribución por país o provincia, evolución temporal por año de observación, distribución por nivel taxonómico y análisis de completitud (valores nulos) de las columnas.
+* **Gestión de registros (P5)**: permite insertar registros nuevos, buscar registros por identificador para actualizarlos o eliminar datos mediante condiciones (==, >, <, etc.). Todas las operaciones validan los datos y modifican el dataset procesado.
+* **Exploración de datasets (P6)**: vista general que compara todos los datasets del sistema: peso en disco, porcentaje de coordenadas válidas y la documentación escrita en Markdown.
+* **Ficha de datos (P7)**: se accede desde la página de Búsqueda. Muestra las ocurrencias en un mapa interactivo (Folium) y una ficha con el contenido multimedia asociado a cada registro, como audios de Xeno-canto y fotos de iNaturalist.
 
-### Uso Transversal
-Cualquier módulo que necesite acceder a los datos (como `src/pages/2_Estado_del_sistema.py` o los notebooks) utiliza la función `obtener_ruta_y_separador(dataset)` definida en `src/common/functions.py`, la cual importa directamente estas constantes. Esto asegura que un cambio en la estructura de carpetas solo deba modificarse en un único lugar.
+## Estructura del proyecto
+
+```
+├── documentation/          # Análisis y descripción de los datasets originales (Ejercicio 1)
+├── raw_datasets/           # Datasets originales (no incluidos en el repositorio)
+├── processed_datasets/     # Datos validados y procesados por el sistema
+├── logs/                   # Registro de operaciones del sistema
+├── src/
+│   ├── core/               # Lógica de procesamiento y validaciones
+│   ├── common/             # Constantes y funciones auxiliares
+│   ├── notebooks/          # Desarrollo y pruebas de los ejercicios
+│   └── web/                # Aplicación Streamlit (Etapa 2)
+│       ├── Inicio.py       # Página principal
+│       ├── pages/          # Páginas secundarias
+│       ├── components/     # Componentes reutilizables (barra lateral)
+│       └── utils/          # Funciones auxiliares de la aplicación
+├── requirements.txt
+├── LICENSE                 # Licencia MIT
+└── README.md
+```
+
+## Configuración centralizada y rutas
+
+Para no repetir código y mantener la consistencia entre los notebooks y la aplicación, las rutas y formatos están centralizados en `src/common/constants.py`:
+
+* **BASE_DIR**: se calcula con `pathlib`, así las rutas funcionan de forma relativa a la raíz del proyecto en cualquier sistema operativo.
+* **LOG_PATH**: `logs/operations.log`, ubicación única del registro de auditoría. Se crea automáticamente al ejecutar la celda que inicializa el archivo.
+* **DATASETS**: ubicación y separador de cada dataset original:
+  * **IADIZA**: `raw_datasets/IADIZA-CONICET/IADIZA-CONICET/occurrence.txt` · separador `\t` (tabulación).
+  * **Inaturalist**: `raw_datasets/Inaturalist/Inaturalist/observations.csv` · separador `,` (coma).
+  * **XenoCanto**: `raw_datasets/XenoCanto/XenoCanto/Occurrence.txt` · separador `,` (coma).
+* **PROCESSED_DATASETS**: ubicación de los datos limpios generados en la Etapa 1, todos exportados en `.csv`:
+  * **IADIZA**: `processed_datasets/IADIZA/IADIZA_processed.csv` · separador `\t` (tabulación).
+  * **Inaturalist**: `processed_datasets/Inaturalist/Inaturalist_processed.csv` · separador `,` (coma).
+  * **XenoCanto**: `processed_datasets/XenoCanto/XenoCanto_processed.csv` · separador `,` (coma).
+
+Cualquier módulo que necesita acceder a los datos usa la función `obtener_ruta_y_separador(dataset)` de `src/common/dataset_utils.py`, que toma estas constantes. Así, un cambio en la estructura de carpetas se modifica en un solo lugar.
+
+## Licencia
+
+MIT. Ver [LICENSE](LICENSE).
